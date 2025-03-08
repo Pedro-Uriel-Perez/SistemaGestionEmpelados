@@ -1,0 +1,115 @@
+/* Estilos generales */
+body {
+    background-color: #f8f9fa; /* Fondo claro */
+    font-family: 'Arial', sans-serif; /* Tipografía legible */
+}
+
+.container {
+    max-width: 900px; /* Ancho máximo del contenedor */
+    margin: 20px auto; /* Centrado automático */
+    padding: 20px; /* Espaciado interno */
+    background-color: #ffffff; /* Fondo blanco */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+/* Encabezados */
+h2 {
+    color: #343a40; /* Color oscuro para encabezados */
+}
+
+/* Estilos de botones */
+.btn {
+    border-radius: 5px; /* Bordes redondeados */
+    padding: 10px 15px; /* Espaciado interno */
+    font-size: 0.9rem; /* Tamaño de fuente */
+    transition: background-color 0.3s; /* Transición suave */
+}
+
+.btn-primary {
+    background-color: #007bff; /* Color azul */
+    border: none; /* Sin borde */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Color azul más oscuro al pasar el mouse */
+}
+
+.btn-info {
+    background-color: #17a2b8; /* Color cian */
+    border: none; /* Sin borde */
+}
+
+.btn-info:hover {
+    background-color: #138496; /* Color cian más oscuro al pasar el mouse */
+}
+
+.btn-danger {
+    background-color: #dc3545; /* Color rojo */
+    border: none; /* Sin borde */
+}
+
+.btn-danger:hover {
+    background-color: #c82333; /* Color rojo más oscuro al pasar el mouse */
+}
+
+/* Estilos de la tabla */
+.table {
+    width: 100%; /* Ancho completo */
+    margin-bottom: 1rem; /* Margen inferior */
+    color: #212529; /* Color del texto */
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f2f2f2; /* Fondo gris claro para filas impares */
+}
+
+.table-hover tbody tr:hover {
+    background-color: #e9ecef; /* Fondo gris claro al pasar el mouse */
+}
+
+.table th {
+    background-color: #007bff; /* Color de fondo azul para encabezados */
+    color: white; /* Texto blanco */
+    font-weight: bold; /* Negrita */
+}
+
+.table td {
+    vertical-align: middle; /* Alineación vertical */
+}
+
+/* Estilos de badge */
+.badge {
+    font-size: 0.9rem; /* Tamaño de fuente */
+}
+
+/* Espaciado */
+.mb-4 {
+    margin-bottom: 1.5rem; /* Margen inferior */
+}
+
+.my-5 {
+    margin: 3rem 0; /* Margen vertical */
+}
+
+/* Spinner */
+.spinner-border {
+    width: 2rem; /* Ancho del spinner */
+    height: 2rem; /* Alto del spinner */
+}
+
+/* Alertas */
+.alert {
+    margin-bottom: 20px; /* Margen inferior */
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px; /* Espaciado interno reducido */
+    }
+
+    .table {
+        font-size: 0.9rem; /* Tamaño de fuente reducido en pantallas pequeñas */
+    }
+}

@@ -1,0 +1,145 @@
+<div class="container">
+    <div *ngIf="cargando" class="text-center my-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Cargando su información...</p>
+    </div>
+  
+    <div *ngIf="error" class="alert alert-danger">
+      {{ error }}
+    </div>
+  
+    <div *ngIf="!cargando && !error && empleado">
+      <div class="row mb-4">
+        <div class="col-md-12">
+          <h2>Mi Perfil</h2>
+          <p class="lead">Bienvenido(a) {{ empleado.nombre }} {{ empleado.apellidoPaterno }}</p>
+        </div>
+      </div>
+  
+      <!-- Información General -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Mi Información</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 text-center mb-3">
+              <!-- Foto del empleado -->
+              <img 
+                [src]="empleado.foto && empleado.foto !== 'uploads/empleados/default.jpg' 
+                     ? 'http://localhost:3000/' + empleado.foto 
+                     : 'assets/img/default-profile.jpg'"
+                alt="Mi foto"
+                class="img-fluid rounded"
+                style="max-height: 200px; max-width: 100%;">
+            </div>
+            <div class="col-md-8">
+              <h4>{{ empleado.nombre }} {{ empleado.apellidoPaterno }} {{ empleado.apellidoMaterno }}</h4>
+              <span class="badge"
+                    [ngClass]="{
+                       'bg-success': empleado.estado === 'Activo',
+                       'bg-warning': empleado.estado === 'BajaTemporal',
+                       'bg-danger': empleado.estado === 'BajaDefinitiva'
+                     }">
+                {{ empleado.estado }}
+              </span>
+              
+              <ul class="list-group list-group-flush mt-3">
+                <li class="list-group-item"><strong>Clave:</strong> {{ empleado.clave }}</li>
+                <li class="list-group-item"><strong>RFC:</strong> {{ empleado.rfc }}</li>
+                <li class="list-group-item"><strong>Puesto:</strong> {{ empleado.puesto }}</li>
+                <li class="list-group-item"><strong>Departamento:</strong> {{ empleado.departamento }}</li>
+                <li class="list-group-item"><strong>Fecha de Ingreso:</strong> {{ empleado.fechaIngreso | date }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Datos Personales -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Datos Personales</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Fecha de Nacimiento:</strong> {{ empleado.fechaNacimiento | date }}</p>
+              <p><strong>Dirección:</strong> {{ empleado.direccion }}</p>
+              <p><strong>Ciudad:</strong> {{ empleado.ciudad }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Teléfono:</strong> {{ empleado.telefono }}</p>
+              <p><strong>Email:</strong> {{ empleado.email }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Cursos -->
+      <div class="card mb-4" *ngIf="empleado.cursos && empleado.cursos.length > 0">
+        <div class="card-header">
+          <h5>Mis Cursos</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Documento</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let curso of empleado.cursos">
+                <td>{{ curso.nombre }}</td>
+                <td>{{ curso.fechaInicio | date }}</td>
+                <td>{{ curso.fechaFin | date }}</td>
+                <td>{{ curso.documento }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Actividades -->
+      <div class="card mb-4" *ngIf="empleado.actividades && empleado.actividades.length > 0">
+        <div class="card-header">
+          <h5>Mis Actividades</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th>Participación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let actividad of empleado.actividades">
+                <td>{{ actividad.nombre }}</td>
+                <td>{{ actividad.fecha | date }}</td>
+                <td>
+                  <span class="badge" [ngClass]="actividad.participacion ? 'bg-success' : 'bg-danger'">
+                    {{ actividad.participacion ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+       
+  
+      
+  <!-- Botón de cierre de sesión - agrega esto cerca del final -->
+  <div class="mt-4 mb-5">
+    <button class="btn btn-danger" (click)="cerrarSesion()">
+      <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+    </button>
+  </div>
+

@@ -1,0 +1,16 @@
+<div class="form-container">
+    <p class="title">Bienvenido de nuevo</p>
+    <form class="form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <input type="email" class="input" placeholder="Correo electrónico" formControlName="username">
+      <input type="password" class="input" placeholder="Contraseña" formControlName="password">
+      
+      <button class="form-btn" type="submit" [disabled]="loginForm.invalid || loading">
+        <span *ngIf="loading" class="spinner"></span>
+        Iniciar sesión
+      </button>
+    </form>
+        
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+  </div>

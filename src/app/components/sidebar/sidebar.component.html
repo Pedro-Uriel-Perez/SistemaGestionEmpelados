@@ -1,0 +1,47 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+      <h3>Sistema Empleados</h3>
+    </div>
+  
+    <div class="user-info mb-4">
+      <p class="user-name">{{ username }}</p>
+      <span class="user-role badge bg-primary">{{ userRole | titlecase }}</span>
+    </div>
+    
+    <div class="sidebar-menu">
+      <!-- Enlaces para admin y RRHH -->
+      <ng-container *ngIf="authService.hasRole('admin') || authService.hasRole('recursosHumanos')">
+        <a routerLink="/" class="sidebar-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a routerLink="/empleados" class="sidebar-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <i class="bi bi-people"></i> Empleados
+        </a>
+      </ng-container>
+      
+      <!-- Enlaces solo para admin -->
+      <ng-container *ngIf="authService.hasRole('admin')">
+        <a routerLink="/usuarios" class="sidebar-item" routerLinkActive="active">
+          <i class="bi bi-person-lock"></i> Gestión de Usuarios
+        </a>
+      </ng-container>
+      
+      <!-- Enlaces para empleados -->
+      <ng-container *ngIf="authService.hasRole('empleado')">
+        <a routerLink="/perfil" class="sidebar-item" routerLinkActive="active">
+          <i class="bi bi-person-circle"></i> Mi Perfil
+        </a>
+        <a routerLink="/mis-cursos" class="sidebar-item" routerLinkActive="active">
+          <i class="bi bi-book"></i> Mis Cursos
+        </a>
+      </ng-container>
+      
+      <!-- Enlace común para todos -->
+      <a routerLink="/cambiar-password" class="sidebar-item" routerLinkActive="active">
+        <i class="bi bi-key"></i> Cambiar Contraseña
+      </a>
+      <a (click)="logout()" class="sidebar-item logout-link">
+        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+      </a>
+    </div>
+  </div>

@@ -1,0 +1,57 @@
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Lista de Empleados</h2>
+      <button class="btn btn-primary" routerLink="/empleados/crear">Nuevo Empleado</button>
+    </div>
+  
+    <div *ngIf="cargando" class="text-center my-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  
+    <div *ngIf="error" class="alert alert-danger">
+      {{ error }}
+    </div>
+  
+    <div class="table-responsive" *ngIf="!cargando && empleados.length > 0">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Clave</th>
+            <th>Nombre</th>
+            <th>Departamento</th>
+            <th>Puesto</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let empleado of empleados">
+            <td>{{ empleado.clave }}</td>
+            <td>{{ empleado.nombre }} {{ empleado.apellidoPaterno }} {{ empleado.apellidoMaterno }}</td>
+            <td>{{ empleado.departamento }}</td>
+            <td>{{ empleado.puesto }}</td>
+            <td>
+              <span [ngClass]="{
+                'badge bg-success': empleado.estado === 'Activo',
+                'badge bg-warning': empleado.estado === 'BajaTemporal',
+                'badge bg-danger': empleado.estado === 'BajaDefinitiva'
+              }">{{ empleado.estado }}</span>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-info" [routerLink]="['/empleados/ver', empleado._id]">Ver</button>
+                <button class="btn btn-primary" [routerLink]="['/empleados/editar', empleado._id]">Editar</button>
+                <button class="btn btn-danger" (click)="eliminarEmpleado(empleado._id)">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+    <div *ngIf="!cargando && empleados.length === 0" class="alert alert-info">
+      No hay empleados registrados. ¡Agrega uno nuevo!
+    </div>
+  </div>

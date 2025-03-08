@@ -1,0 +1,209 @@
+<div class="container">
+    <div *ngIf="cargando" class="text-center my-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Cargando información del empleado...</p>
+    </div>
+  
+    <div *ngIf="error" class="alert alert-danger">
+      {{ error }}
+    </div>
+  
+    <div *ngIf="!cargando && !error && empleado">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Detalles del Empleado</h2>
+        <div>
+          <button class="btn btn-primary me-2" [routerLink]="['/empleados/editar', empleado._id]">Editar</button>
+          <button class="btn btn-secondary" routerLink="/empleados">Volver</button>
+        </div>
+      </div>
+  
+      <!-- Información General -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Información General</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 text-center mb-3">
+              <!-- Foto del empleado -->
+              <img 
+                [src]="empleado.foto && empleado.foto !== 'uploads/empleados/default.jpg' 
+                     ? 'http://localhost:3000/' + empleado.foto 
+                     : 'assets/img/default-profile.jpg'"
+                alt="Foto del empleado"
+                class="img-fluid rounded"
+                style="max-height: 200px; max-width: 100%;">
+            </div>
+            <div class="col-md-8">
+              <h4>{{ empleado.nombre }} {{ empleado.apellidoPaterno }} {{ empleado.apellidoMaterno }}</h4>
+              <span class="badge"
+                    [ngClass]="{
+                       'bg-success': empleado.estado === 'Activo',
+                       'bg-warning': empleado.estado === 'BajaTemporal',
+                       'bg-danger': empleado.estado === 'BajaDefinitiva'
+                     }">
+                {{ empleado.estado }}
+              </span>
+              
+              <ul class="list-group list-group-flush mt-3">
+                <li class="list-group-item"><strong>Clave:</strong> {{ empleado.clave }}</li>
+                <li class="list-group-item"><strong>RFC:</strong> {{ empleado.rfc }}</li>
+                <li class="list-group-item"><strong>Puesto:</strong> {{ empleado.puesto }}</li>
+                <li class="list-group-item"><strong>Departamento:</strong> {{ empleado.departamento }}</li>
+                <li class="list-group-item"><strong>Fecha de Ingreso:</strong> {{ empleado.fechaIngreso | date }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Datos Personales -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Datos Personales</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Fecha de Nacimiento:</strong> {{ empleado.fechaNacimiento | date }}</p>
+              <p><strong>Dirección:</strong> {{ empleado.direccion }}</p>
+              <p><strong>Ciudad:</strong> {{ empleado.ciudad }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Teléfono:</strong> {{ empleado.telefono }}</p>
+              <p><strong>Email:</strong> {{ empleado.email }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Historial de Bajas -->
+      <div class="card mb-4" *ngIf="empleado.bajas && empleado.bajas.length > 0">
+        <div class="card-header">
+          <h5>Historial de Bajas</h5>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Motivo</th>
+                <th>Fecha de Retorno</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let baja of empleado.bajas">
+                <td>{{ baja.fecha | date }}</td>
+                <td>{{ baja.tipo }}</td>
+                <td>{{ baja.motivo }}</td>
+                <td>{{ baja.fechaRetorno | date }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Cursos -->
+      <div class="card mb-4" *ngIf="empleado.cursos && empleado.cursos.length > 0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5>Cursos</h5>
+          <button class="btn btn-sm btn-primary">Agregar Curso</button>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Documento</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let curso of empleado.cursos">
+                <td>{{ curso.nombre }}</td>
+                <td>{{ curso.fechaInicio | date }}</td>
+                <td>{{ curso.fechaFin | date }}</td>
+                <td>{{ curso.documento }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Actividades -->
+      <div class="card mb-4" *ngIf="empleado.actividades && empleado.actividades.length > 0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5>Actividades</h5>
+          <button class="btn btn-sm btn-primary">Registrar Actividad</button>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th>Participación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let actividad of empleado.actividades">
+                <td>{{ actividad.nombre }}</td>
+                <td>{{ actividad.fecha | date }}</td>
+                <td>
+                  <span class="badge" [ngClass]="actividad.participacion ? 'bg-success' : 'bg-danger'">
+                    {{ actividad.participacion ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Referencias Familiares -->
+      <div class="card mb-4" *ngIf="empleado.referenciasFamiliares && empleado.referenciasFamiliares.length > 0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5>Referencias Familiares</h5>
+          <button class="btn btn-sm btn-primary">Agregar Referencia</button>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3" *ngFor="let referencia of empleado.referenciasFamiliares">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6>{{ referencia.nombre }}</h6>
+                  <p><strong>Parentesco:</strong> {{ referencia.parentesco }}</p>
+                  <p><strong>Teléfono:</strong> {{ referencia.telefono }}</p>
+                  <p *ngIf="referencia.email"><strong>Email:</strong> {{ referencia.email }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Opciones adicionales -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Opciones</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex gap-2">
+            <button class="btn btn-warning" *ngIf="empleado.estado === 'Activo'">
+              Registrar Baja
+            </button>
+            <button class="btn btn-success" *ngIf="empleado.estado === 'BajaTemporal'">
+              Registrar Reingreso
+            </button>
+            <button class="btn btn-danger" (click)="eliminarEmpleado()">
+              Eliminar Empleado
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
