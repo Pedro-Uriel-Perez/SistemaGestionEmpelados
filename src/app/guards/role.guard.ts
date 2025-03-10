@@ -24,7 +24,6 @@ export class RoleGuard implements CanActivate {
     const userRole = this.authService.getUserRole();
     
     if (!requiredRoles.includes(userRole)) {
-      // Redireccionar según el rol actual
       if (userRole === 'empleado') {
         this.router.navigate(['/perfil']);
       } else {

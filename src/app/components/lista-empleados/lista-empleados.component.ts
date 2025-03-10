@@ -30,8 +30,6 @@ export class ListaEmpleadosComponent implements OnInit {
       });
     }
   }
-
-  
   cargarEmpleados(): void {
     this.cargando = true;
     this.error = '';

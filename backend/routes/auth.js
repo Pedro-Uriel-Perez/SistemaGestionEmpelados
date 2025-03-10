@@ -16,4 +16,5 @@ router.post('/admin', authController.createAdminUser);
 // Crear usuario para empleado (solo admin y RRHH)
 router.post('/users', auth, checkRole('admin', 'recursosHumanos'), authController.crearUsuario);
 
+
 module.exports = router;

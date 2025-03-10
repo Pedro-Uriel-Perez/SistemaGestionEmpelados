@@ -59,7 +59,6 @@
         </div>
       </div>
   
-      <!-- Datos Personales -->
       <div class="card mb-4">
         <div class="card-header">
           <h5>Datos Personales</h5>
@@ -68,11 +67,19 @@
           <div class="row">
             <div class="col-md-6">
               <p><strong>Fecha de Nacimiento:</strong> {{ empleado.fechaNacimiento | date }}</p>
+              <p><strong>Sexo:</strong> {{ empleado.sexo || 'No especificado' }}</p>
               <p><strong>Dirección:</strong> {{ empleado.direccion }}</p>
               <p><strong>Ciudad:</strong> {{ empleado.ciudad }}</p>
             </div>
             <div class="col-md-6">
-              <p><strong>Teléfono:</strong> {{ empleado.telefono }}</p>
+              <p *ngIf="empleado.telefonos && empleado.telefonos.length > 0"><strong>Teléfonos:</strong>
+                <span *ngFor="let tel of empleado.telefonos; let last = last">
+                  {{ tel.numero }}{{ !last ? ', ' : '' }}
+                </span>
+              </p>
+              <p *ngIf="!empleado.telefonos || empleado.telefonos.length === 0">
+                <strong>Teléfono:</strong> {{ empleado.telefono || 'No especificado' }}
+              </p>
               <p><strong>Email:</strong> {{ empleado.email }}</p>
             </div>
           </div>
@@ -107,13 +114,23 @@
       </div>
   
       <!-- Cursos -->
-      <div class="card mb-4" *ngIf="empleado.cursos && empleado.cursos.length > 0">
+      <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5>Cursos</h5>
-          <button class="btn btn-sm btn-primary">Agregar Curso</button>
+          <div>
+            <button class="btn btn-sm btn-primary me-2" [routerLink]="['/empleados', empleado._id, 'cursos', 'nuevo']">
+              Agregar Curso
+            </button>
+            <button class="btn btn-sm btn-secondary" [routerLink]="['/empleados', empleado._id, 'cursos']">
+              Ver Todos
+            </button>
+          </div>
         </div>
         <div class="card-body">
-          <table class="table">
+          <div *ngIf="!empleado.cursos || empleado.cursos.length === 0" class="alert alert-info">
+            No hay cursos registrados para este empleado.
+          </div>
+          <table class="table" *ngIf="empleado.cursos && empleado.cursos.length > 0">
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -123,25 +140,38 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let curso of empleado.cursos">
+              <tr *ngFor="let curso of empleado.cursos | slice:0:3">
                 <td>{{ curso.nombre }}</td>
                 <td>{{ curso.fechaInicio | date }}</td>
                 <td>{{ curso.fechaFin | date }}</td>
-                <td>{{ curso.documento }}</td>
+                <td>{{ curso.tipoDocumento || curso.documento }}</td>
               </tr>
             </tbody>
           </table>
+          <div *ngIf="empleado.cursos && empleado.cursos.length > 3" class="text-end mt-2">
+            <a [routerLink]="['/empleados', empleado._id, 'cursos']">Ver todos los cursos ({{ empleado.cursos.length }})</a>
+          </div>
         </div>
       </div>
   
       <!-- Actividades -->
-      <div class="card mb-4" *ngIf="empleado.actividades && empleado.actividades.length > 0">
+      <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h5>Actividades</h5>
-          <button class="btn btn-sm btn-primary">Registrar Actividad</button>
+          <div>
+            <button class="btn btn-sm btn-primary me-2" [routerLink]="['/empleados', empleado._id, 'actividades', 'nuevo']">
+              Registrar Actividad
+            </button>
+            <button class="btn btn-sm btn-secondary" [routerLink]="['/empleados', empleado._id, 'actividades']">
+              Ver Todas
+            </button>
+          </div>
         </div>
         <div class="card-body">
-          <table class="table">
+          <div *ngIf="!empleado.actividades || empleado.actividades.length === 0" class="alert alert-info">
+            No hay actividades registradas para este empleado.
+          </div>
+          <table class="table" *ngIf="empleado.actividades && empleado.actividades.length > 0">
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -150,17 +180,21 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let actividad of empleado.actividades">
+              <tr *ngFor="let actividad of empleado.actividades | slice:0:3">
                 <td>{{ actividad.nombre }}</td>
                 <td>{{ actividad.fecha | date }}</td>
                 <td>
-                  <span class="badge" [ngClass]="actividad.participacion ? 'bg-success' : 'bg-danger'">
-                    {{ actividad.participacion ? 'Sí' : 'No' }}
+                  <span class="badge" 
+                        [ngClass]="actividad.participo || actividad.participacion ? 'bg-success' : 'bg-danger'">
+                    {{ actividad.participo || actividad.participacion ? 'Sí' : 'No' }}
                   </span>
                 </td>
               </tr>
             </tbody>
           </table>
+          <div *ngIf="empleado.actividades && empleado.actividades.length > 3" class="text-end mt-2">
+            <a [routerLink]="['/empleados', empleado._id, 'actividades']">Ver todas las actividades ({{ empleado.actividades.length }})</a>
+          </div>
         </div>
       </div>
   

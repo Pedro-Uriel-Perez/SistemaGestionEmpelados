@@ -1,0 +1,61 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Actividades de {{ empleado?.nombre }} {{ empleado?.apellidoPaterno }}</h2>
+      <div>
+        <button *ngIf="canEdit" class="btn btn-primary me-2" [routerLink]="['/empleados', empleadoId, 'actividades', 'nuevo']">
+          Agregar Actividad
+        </button>
+        <button class="btn btn-secondary" [routerLink]="['/empleados', 'ver', empleadoId]">
+          Volver
+        </button>
+      </div>
+    </div>
+  
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+    <div *ngIf="loading" class="text-center my-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  
+    <div *ngIf="!loading">
+      <div *ngIf="actividades.length === 0" class="alert alert-info">
+        No hay actividades registradas para este empleado.
+      </div>
+  
+      <div class="table-responsive" *ngIf="actividades.length > 0">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Nombre de la Actividad</th>
+              <th>Fecha</th>
+              <th>Participación</th>
+              <th>Observaciones</th>
+              <th *ngIf="canEdit">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let actividad of actividades">
+              <td>{{ actividad.nombre }}</td>
+              <td>{{ actividad.fecha | date }}</td>
+              <td>
+                <span class="badge" [ngClass]="actividad.participo ? 'bg-success' : 'bg-danger'">
+                  {{ actividad.participo ? 'Sí' : 'No' }}
+                </span>
+              </td>
+              <td>{{ actividad.observaciones || '-' }}</td>
+              <td *ngIf="canEdit">
+                <button class="btn btn-sm btn-primary me-1" [routerLink]="['/empleados', empleadoId, 'actividades', 'editar', actividad._id]">
+                  Editar
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="eliminarActividad(actividad._id)">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

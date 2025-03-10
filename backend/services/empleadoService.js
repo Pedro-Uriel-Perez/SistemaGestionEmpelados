@@ -3,23 +3,18 @@ const Empleado = require('../models/Empleado');
 // Generar clave automática
 const generarClave = async (nombre, apellidoPaterno, apellidoMaterno) => {
   let iniciales = '';
-  
-  // Obtener iniciales
   if (nombre) iniciales += nombre.substring(0, 2).toUpperCase();
   if (apellidoPaterno) iniciales += apellidoPaterno.charAt(0).toUpperCase();
   if (apellidoMaterno) iniciales += apellidoMaterno.charAt(0).toUpperCase();
   
-  // Obtener consecutivo
   const ultimoEmpleado = await Empleado.findOne().sort({ createdAt: -1 });
   let consecutivo = 1;
   
-  if (ultimoEmpleado && ultimoEmpleado.clave) {
+  if (ultimoEmpleado?.clave) {
     const partes = ultimoEmpleado.clave.split('-');
     if (partes.length > 1) {
-      const ultimoConsecutivo = parseInt(partes[1]);
-      if (!isNaN(ultimoConsecutivo)) {
-        consecutivo = ultimoConsecutivo + 1;
-      }
+      const num = parseInt(partes[1]);
+      if (!isNaN(num)) consecutivo = num + 1;
     }
   }
   
@@ -29,18 +24,10 @@ const generarClave = async (nombre, apellidoPaterno, apellidoMaterno) => {
 // Generar RFC
 const generarRFC = (nombre, apellidoPaterno, apellidoMaterno, fechaNacimiento) => {
   let rfc = '';
+  rfc += apellidoPaterno ? apellidoPaterno.substring(0, 2).toUpperCase() : 'XX';
+  rfc += apellidoMaterno ? apellidoMaterno.charAt(0).toUpperCase() : 'X';
+  rfc += nombre ? nombre.charAt(0).toUpperCase() : 'X';
   
-  // Obtener letras
-  if (apellidoPaterno) rfc += apellidoPaterno.substring(0, 2).toUpperCase();
-  else rfc += 'XX';
-  
-  if (apellidoMaterno) rfc += apellidoMaterno.charAt(0).toUpperCase();
-  else rfc += 'X';
-  
-  if (nombre) rfc += nombre.charAt(0).toUpperCase();
-  else rfc += 'X';
-  
-  // Obtener fecha
   let fecha = '000000';
   if (fechaNacimiento) {
     const date = new Date(fechaNacimiento);
@@ -55,21 +42,58 @@ const generarRFC = (nombre, apellidoPaterno, apellidoMaterno, fechaNacimiento) =
 
 // Crear empleado
 const crearEmpleado = async (empleadoData, fotoPath) => {
-  const { nombre, apellidoPaterno, apellidoMaterno, fechaNacimiento, ...resto } = empleadoData;
+  const { nombre, apellidoPaterno, apellidoMaterno, fechaNacimiento, sexo, ...resto } = empleadoData;
   
-  // Generar clave y RFC
+  if (!sexo || !['Masculino', 'Femenino'].includes(sexo)) {
+    throw new Error('El campo sexo es requerido y debe ser "Masculino" o "Femenino"');
+  }
+  
+  const fechaNac = fechaNacimiento instanceof Date ? fechaNacimiento : new Date(fechaNacimiento);
   const clave = await generarClave(nombre, apellidoPaterno, apellidoMaterno);
-  const rfc = generarRFC(nombre, apellidoPaterno, apellidoMaterno, fechaNacimiento);
+  const rfc = generarRFC(nombre, apellidoPaterno, apellidoMaterno, fechaNac);
+  
+  // Procesar teléfonos
+  let telefonos = [];
+  if (resto.telefonos) {
+    const data = typeof resto.telefonos === 'string' ? JSON.parse(resto.telefonos) : resto.telefonos;
+    const array = Array.isArray(data) ? data : [data];
+    
+    telefonos = array.map(tel => {
+      if (typeof tel === 'string') return { numero: tel, tipo: 'Personal' };
+      if (tel?.numero) return { numero: tel.numero, tipo: tel.tipo || 'Personal' };
+      return { numero: '', tipo: 'Personal' };
+    });
+  }
+  
+  // Procesar referencias familiares
+  let referencias = [];
+  if (resto.referenciasFamiliares) {
+    const data = typeof resto.referenciasFamiliares === 'string' ? 
+                 JSON.parse(resto.referenciasFamiliares) : resto.referenciasFamiliares;
+    const array = Array.isArray(data) ? data : [data];
+    
+    referencias = array
+      .filter(ref => ref && typeof ref === 'object')
+      .map(ref => ({
+        nombre: String(ref.nombre || ''),
+        parentesco: String(ref.parentesco || ''),
+        telefono: String(ref.telefono || ''),
+        email: String(ref.email || '')
+      }));
+  }
   
   // Crear empleado
   const empleado = new Empleado({
     nombre,
     apellidoPaterno,
     apellidoMaterno,
-    fechaNacimiento,
+    fechaNacimiento: fechaNac,
+    sexo,
     clave,
     rfc,
     ...resto,
+    telefonos,
+    referenciasFamiliares: referencias,
     foto: fotoPath ? fotoPath.replace(/\\/g, '/') : 'uploads/empleados/default.jpg',
     estado: 'Activo'
   });
@@ -92,22 +116,26 @@ const obtenerEmpleados = async (filtros = {}) => {
 };
 
 // Obtener empleado por ID
-const obtenerEmpleadoPorId = async (id) => {
-  return await Empleado.findById(id);
-};
+const obtenerEmpleadoPorId = async (id) => await Empleado.findById(id);
 
 // Actualizar empleado
 const actualizarEmpleado = async (id, datos, fotoPath) => {
-  // Si hay nueva foto, actualizar ruta
-  if (fotoPath) {
-    datos.foto = fotoPath.replace(/\\/g, '/');
+  if (fotoPath) datos.foto = fotoPath.replace(/\\/g, '/');
+  
+  // Parsear campos JSON
+  ['telefonos', 'referenciasFamiliares', 'cursos', 'actividades', 'bajas'].forEach(campo => {
+    if (datos[campo] && typeof datos[campo] === 'string') {
+      try { datos[campo] = JSON.parse(datos[campo]); } catch (e) {}
+    }
+  });
+  
+  // Asegurar campo sexo
+  if (!datos.sexo) {
+    const empleado = await Empleado.findById(id);
+    datos.sexo = empleado?.sexo || 'Masculino';
   }
   
-  return await Empleado.findByIdAndUpdate(
-    id,
-    datos,
-    { new: true, runValidators: true }
-  );
+  return await Empleado.findByIdAndUpdate(id, datos, { new: true, runValidators: true });
 };
 
 // Eliminar empleado
@@ -123,14 +151,10 @@ const eliminarEmpleado = async (id) => {
 // Cambiar estado de empleado
 const cambiarEstado = async (id, datos) => {
   const { tipo, fecha, motivo, fechaRetorno } = datos;
-  
   const empleado = await Empleado.findById(id);
   
-  if (!empleado) {
-    return null;
-  }
+  if (!empleado) return null;
   
-  // Agregar registro de baja
   empleado.bajas.push({
     fecha,
     tipo,
@@ -138,7 +162,6 @@ const cambiarEstado = async (id, datos) => {
     fechaRetorno: tipo === 'Temporal' ? fechaRetorno : null
   });
   
-  // Actualizar estado
   empleado.estado = tipo === 'Temporal' ? 'BajaTemporal' : 'BajaDefinitiva';
   
   return await empleado.save();

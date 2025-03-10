@@ -118,13 +118,10 @@ exports.crearUsuario = async (req, res) => {
       return res.status(400).json({ message: 'Ya existe un usuario para este empleado' });
     }
     
-    // Verificar si el nombre de usuario ya está en uso
-    const userExists = await User.findOne({ 
-      username,
-      empleado: { $ne: empleadoId }
-    });
-    
-    if (userExists) {
+    // Verificar si el username (email) ya está en uso
+    // Simplificamos esta verificación para evitar problemas
+    const usernameExistente = await User.findOne({ username: username });
+    if (usernameExistente) {
       return res.status(400).json({ message: 'Ese nombre de usuario ya está en uso' });
     }
     
@@ -138,7 +135,7 @@ exports.crearUsuario = async (req, res) => {
       password: hashedPassword,
       rol,
       empleado: empleadoId,
-      requiereCambioPassword: true // Marcar que requiere cambio de contraseña
+      requiereCambioPassword: true
     });
     
     await newUser.save();
@@ -152,7 +149,7 @@ exports.crearUsuario = async (req, res) => {
       password
     );
 
-    // Responder con éxito, indicando si se envió el correo
+    // Responder con éxito
     res.status(201).json({ 
       message: 'Usuario creado con éxito',
       emailEnviado: emailEnviado,
@@ -163,7 +160,10 @@ exports.crearUsuario = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Error del servidor');
+    console.error('Error completo:', err);
+    res.status(500).json({
+      message: 'Error del servidor',
+      error: err.message
+    });
   }
 };

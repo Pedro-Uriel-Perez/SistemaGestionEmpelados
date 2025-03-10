@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// Esquema de Empleado simplificado
+// Esquema de Empleado
 const EmpleadoSchema = new mongoose.Schema({
   clave: {
     type: String,
@@ -25,6 +25,11 @@ const EmpleadoSchema = new mongoose.Schema({
   },
   fechaNacimiento: {
     type: Date,
+    required: true
+  },
+  sexo: {
+    type: String,
+    enum: ['Masculino', 'Femenino'],
     required: true
   },
   foto: {

@@ -25,6 +25,7 @@ export class EmpleadoService {
     
     return this.http.get<{success: boolean, count: number, data: Empleado[]}>(this.apiUrl, { params });
   }
+  
   getMiPerfil(): Observable<{success: boolean, data: Empleado}> {
     return this.http.get<{success: boolean, data: Empleado}>(`${this.apiUrl}/perfil`);
   }
@@ -45,15 +46,49 @@ export class EmpleadoService {
     return this.http.patch<{success: boolean, data: Empleado}>(`${this.apiUrl}/${id}/estado`, data);
   }
   
-  registrarCurso(id: string, curso: any): Observable<{success: boolean, data: Empleado}> {
-    return this.http.post<{success: boolean, data: Empleado}>(`${this.apiUrl}/${id}/cursos`, curso);
-  }
-  
-  registrarActividad(id: string, actividad: any): Observable<{success: boolean, data: Empleado}> {
-    return this.http.post<{success: boolean, data: Empleado}>(`${this.apiUrl}/${id}/actividades`, actividad);
-  }
-  
   eliminarEmpleado(id: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+  
+  // Métodos para cursos
+  getCursos(empleadoId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${empleadoId}/cursos`);
+  }
+
+  getCurso(empleadoId: string, cursoId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${empleadoId}/cursos/${cursoId}`);
+  }
+
+  registrarCurso(empleadoId: string, cursoData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${empleadoId}/cursos`, cursoData);
+  }
+
+  actualizarCurso(empleadoId: string, cursoId: string, cursoData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${empleadoId}/cursos/${cursoId}`, cursoData);
+  }
+
+  eliminarCurso(empleadoId: string, cursoId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${empleadoId}/cursos/${cursoId}`);
+  }
+  
+  // Métodos para actividades
+  getActividades(empleadoId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${empleadoId}/actividades`);
+  }
+
+  getActividad(empleadoId: string, actividadId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${empleadoId}/actividades/${actividadId}`);
+  }
+
+  registrarActividad(empleadoId: string, actividadData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${empleadoId}/actividades`, actividadData);
+  }
+
+  actualizarActividad(empleadoId: string, actividadId: string, actividadData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${empleadoId}/actividades/${actividadId}`, actividadData);
+  }
+
+  eliminarActividad(empleadoId: string, actividadId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${empleadoId}/actividades/${actividadId}`);
   }
 }

@@ -1,126 +1,295 @@
-/* Estilos generales */
-body {
-    background-color: #f8f9fa; /* Fondo claro */
-    font-family: 'Arial', sans-serif; /* Tipografía legible */
-}
-
+/* Estilos principales para la sección de perfil */
 .container {
-    max-width: 900px; /* Ancho máximo del contenedor */
-    margin: 20px auto; /* Centrado automático */
-    padding: 20px; /* Espaciado interno */
-    background-color: #ffffff; /* Fondo blanco */
-    border-radius: 8px; /* Bordes redondeados */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
-}
-
-/* Encabezados */
-h2 {
-    color: #343a40; /* Color oscuro para encabezados */
-}
-
-.card {
-    border: none; /* Sin borde */
-    border-radius: 8px; /* Bordes redondeados */
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1); /* Sombra suave */
-}
-
-.card-header {
-    background-color: #007bff; /* Color de fondo azul */
-    color: white; /* Texto blanco */
-    font-weight: bold; /* Negrita */
-}
-
-/* Estilos de botones */
-.btn {
-    border-radius: 5px; /* Bordes redondeados */
-    padding: 10px 15px; /* Espaciado interno */
-    font-size: 0.9rem; /* Tamaño de fuente */
-    transition: background-color 0.3s; /* Transición suave */
-}
-
-.btn-primary {
-    background-color: #007bff; /* Color azul */
-    border: none; /* Sin borde */
-}
-
-.btn-primary:hover {
-    background-color: #0056b3; /* Color azul más oscuro al pasar el mouse */
-}
-
-.btn-danger {
-    background-color: #dc3545; /* Color rojo */
-    border: none; /* Sin borde */
-}
-
-.btn-danger:hover {
-    background-color: #c82333; /* Color rojo más oscuro al pasar el mouse */
-}
-
-/* Estilos de la tabla */
-.table {
-    width: 100%; /* Ancho completo */
-    margin-bottom: 1rem; /* Margen inferior */
-    color: #212529; /* Color del texto */
-}
-
-.table th {
-    background-color: #007bff; /* Color de fondo azul para encabezados */
-    color: white; /* Texto blanco */
-    font-weight: bold; /* Negrita */
-}
-
-.table td {
-    vertical-align: middle; /* Alineación vertical */
-}
-
-/* Estilos de badge */
-.badge {
-    font-size: 0.9rem; /* Tamaño de fuente */
-}
-
-/* Estilos de imagen */
-.img-fluid {
-    max-width: 100%; /* Ancho máximo */
-    height: auto; /* Mantiene la proporción */
-    border-radius: 5px; /* Bordes redondeados */
-}
-
-/* Espaciado */
-.mb-4 {
-    margin-bottom: 1.5rem; /* Margen inferior */
-}
-
-.mt-2 {
-    margin-top: 0.5rem; /* Margen superior */
-}
-
-/* Spinner */
-.spinner-border {
-    width: 2rem; /* Ancho del spinner */
-    height: 2rem; /* Alto del spinner */
-}
-
-/* Alertas */
-.alert {
-    margin-bottom: 20px; /* Margen inferior */
-}
-
-/* Flexbox */
-.d-flex {
-    display: flex; /* Flexbox */
-}
-
-.d-grid {
-    display: grid; /* Grid para botones */
-}
-
-/* Responsividad */
-@media (max-width: 768px) {
-    .container {
-        padding: 15px; /* Espaciado interno reducido */
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Estilos para tarjetas */
+  .card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .card-header {
+    background-color: #2c3e50;
+    color: white;
+    font-weight: 500;
+    padding: 1rem;
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  /* Estilos para la foto de perfil */
+  .img-fluid.rounded {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 4px solid #fff;
+    transition: transform 0.3s;
+  }
+  
+  .img-fluid.rounded:hover {
+    transform: scale(1.03);
+  }
+  
+  /* Estilos para badges (etiquetas) */
+  .badge {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 30px;
+  }
+  
+  .badge.bg-success {
+    background-color: #2ecc71 !important;
+  }
+  
+  .badge.bg-warning {
+    background-color: #f39c12 !important;
+  }
+  
+  .badge.bg-danger {
+    background-color: #e74c3c !important;
+  }
+  
+  /* Estilos para los botones */
+  .btn {
+    border-radius: 5px;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s;
+  }
+  
+  .btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+  }
+  
+  .btn-danger {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+  }
+  
+  .btn-secondary {
+    background-color: #7f8c8d;
+    border-color: #7f8c8d;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #95a5a6;
+    border-color: #95a5a6;
+  }
+  
+  .btn-outline-primary {
+    color: #3498db;
+    border-color: #3498db;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .btn-outline-danger {
+    color: #e74c3c;
+    border-color: #e74c3c;
+  }
+  
+  .btn-outline-danger:hover {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  /* Animación para mensajes */
+  .alert {
+    animation: fadeIn 0.5s;
+    border-radius: 5px;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Estilo para lista de información */
+  .list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 0.8rem 1.2rem;
+    transition: background-color 0.2s;
+  }
+  
+  .list-group-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .list-group-item strong {
+    color: #2c3e50;
+    margin-right: 0.5rem;
+  }
+  
+  /* Estilos para formularios */
+  .form-control, .form-select {
+    padding: 0.6rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: border-color 0.3s;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+  }
+  
+  .input-group .form-control {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  
+  .input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  
+  /* Validación de formularios */
+  .form-control.ng-invalid.ng-touched, 
+  .form-select.ng-invalid.ng-touched {
+    border-color: #e74c3c;
+  }
+  
+  .text-danger {
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+  }
+  
+  /* Estilos para tablas */
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .table th {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    font-weight: 600;
+    border-top: none;
+  }
+  
+  .table td, .table th {
+    padding: 0.75rem;
+    vertical-align: middle;
+  }
+  
+  .table tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Estilos para las referencias familiares */
+  .border.p-3.mb-3.rounded {
+    border-color: #eee !important;
+    background-color: #fcfcfc;
+    transition: all 0.3s;
+  }
+  
+  .border.p-3.mb-3.rounded:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* Sección de edición */
+  .card .card-header h6 {
+    margin-bottom: 0;
+    font-weight: 500;
+  }
+  
+  /* Animaciones para el formulario de curso */
+  .mb-4.p-3.border.rounded {
+    background-color: #f8f9fa;
+    animation: slideDown 0.3s;
+    border-color: #dee2e6 !important;
+  }
+  
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Responsive */
+  @media (max-width: 767.98px) {
+    .col-md-6.mb-3 {
+      margin-bottom: 1.5rem !important;
     }
-
-    .card-body {
-        padding: 15px; /* Espaciado interno reducido */
+  }
+  
+  /* Modo oscuro (opcional, si la aplicación tiene modo oscuro) */
+  @media (prefers-color-scheme: dark) {
+    body.dark-mode .card {
+      background-color: #2c3e50;
+      color: #ecf0f1;
     }
-}
+    
+    body.dark-mode .card-header {
+      background-color: #1a252f;
+    }
+    
+    body.dark-mode .list-group-item {
+      background-color: #34495e;
+      color: #ecf0f1;
+      border-color: #2c3e50;
+    }
+    
+    body.dark-mode .list-group-item:hover {
+      background-color: #2c3e50;
+    }
+    
+    body.dark-mode .form-control,
+    body.dark-mode .form-select {
+      background-color: #34495e;
+      border-color: #2c3e50;
+      color: #ecf0f1;
+    }
+    
+    body.dark-mode .table {
+      color: #ecf0f1;
+    }
+    
+    body.dark-mode .table th {
+      background-color: #1a252f;
+    }
+    
+    body.dark-mode .table tr:hover {
+      background-color: #2c3e50;
+    }
+  }
+  
+  /* Spinner personalizado */
+  .spinner-border {
+    border-width: 0.2rem;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  
+  /* Animaciones adicionales */
+  .fade-in {
+    animation: fadeIn 0.5s;
+  }
+  
+  .slide-in {
+    animation: slideIn 0.5s;
+  }
+  
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }

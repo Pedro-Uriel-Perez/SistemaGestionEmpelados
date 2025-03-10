@@ -15,7 +15,7 @@ module.exports = function(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Agregar usuario al request
-    req.user = decoded.user;
+    req.user = decoded.user || decoded; // Intentar ambas estructuras para compatibilidad
     next();
   } catch (err) {
     res.status(401).json({ message: 'Token no válido' });

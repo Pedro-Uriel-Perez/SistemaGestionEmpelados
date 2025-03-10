@@ -11,6 +11,10 @@ import { VerEmpleadoComponent } from './components/ver-empleado/ver-empleado.com
 import { PerfilEmpleadoComponent } from './components/perfil-empleado/perfil-empleado.component';
 import { AuthService } from './services/auth.service';
 import { Component } from '@angular/core';
+import { ListaCursosComponent } from './components/cursos/lista-cursos/lista-cursos.component';
+import { EditarCursoComponent } from './components/cursos/editar-curso/editar-curso.component';
+import { ListaActividadesComponent } from './components/actividades/lista-actividades/lista-actividades.component';
+import { EditarActividadComponent } from './components/actividades/editar-actividad/editar-actividad.component';
 
 // Componente vacío para usar en la ruta de redirección
 @Component({
@@ -22,14 +26,9 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   
   // Ruta específica para el perfil de empleado (solo rol "empleado")
-  { 
-    path: 'perfil', 
-    component: PerfilEmpleadoComponent,
-    canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['empleado'] }
-  },
+  { path: 'perfil', component: PerfilEmpleadoComponent,canActivate: [AuthGuard, RoleGuard],data: { roles: ['empleado'] }},
   
-  // Rutas para administración (solo admin y RH)
+  // Rutas para RH)
   {
     path: '',
     component: DashboardComponent,
@@ -41,12 +40,22 @@ const routes: Routes = [
       { path: 'empleados/crear', component: CrearEmpleadoComponent },
       { path: 'empleados/editar/:id', component: EditarEmpleadoComponent },
       { path: 'empleados/ver/:id', component: VerEmpleadoComponent },
+      
+      //  rutas para cursos
+      { path: 'empleados/:id/cursos', component: ListaCursosComponent },
+      { path: 'empleados/:id/cursos/nuevo', component: EditarCursoComponent },
+      { path: 'empleados/:id/cursos/editar/:cursoId', component: EditarCursoComponent },
+      
+      //  rutas para actividades
+      { path: 'empleados/:id/actividades', component: ListaActividadesComponent },
+      { path: 'empleados/:id/actividades/nuevo', component: EditarActividadComponent },
+      { path: 'empleados/:id/actividades/editar/:actividadId', component: EditarActividadComponent }
     ]
   },
   
-  // Redirección inteligente basada en rol
+  // Redireccion basada en rol
   { 
-    path: '**', 
+    path: '**',
     component: EmptyComponent,
     resolve: {
       redirect: () => {

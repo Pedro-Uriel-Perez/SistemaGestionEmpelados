@@ -1,0 +1,51 @@
+<div class="container mt-4">
+    <h2>{{ isEditing ? 'Editar' : 'Registrar' }} Actividad</h2>
+  
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+    <div *ngIf="loading" class="text-center my-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  
+    <form [formGroup]="actividadForm" (ngSubmit)="onSubmit()">
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre de la Actividad *</label>
+            <input type="text" class="form-control" id="nombre" formControlName="nombre">
+            <div *ngIf="actividadForm.get('nombre')?.invalid && actividadForm.get('nombre')?.touched" class="text-danger">
+              El nombre de la actividad es requerido
+            </div>
+          </div>
+  
+          <div class="mb-3">
+            <label for="fecha" class="form-label">Fecha *</label>
+            <input type="date" class="form-control" id="fecha" formControlName="fecha">
+            <div *ngIf="actividadForm.get('fecha')?.invalid && actividadForm.get('fecha')?.touched" class="text-danger">
+              La fecha es requerida
+            </div>
+          </div>
+  
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="participo" formControlName="participo">
+            <label class="form-check-label" for="participo">¿Participó?</label>
+          </div>
+  
+          <div class="mb-3">
+            <label for="observaciones" class="form-label">Observaciones</label>
+            <textarea class="form-control" id="observaciones" rows="3" formControlName="observaciones"></textarea>
+          </div>
+        </div>
+      </div>
+  
+      <div class="d-flex justify-content-between mt-3">
+        <button type="button" class="btn btn-secondary" [routerLink]="['/empleados', empleadoId, 'actividades']">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="actividadForm.invalid || loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          {{ isEditing ? 'Guardar Cambios' : 'Registrar Actividad' }}
+        </button>
+      </div>
+    </form>
+  </div>

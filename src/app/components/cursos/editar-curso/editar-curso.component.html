@@ -1,0 +1,67 @@
+<div class="container mt-4">
+    <h2>{{ isEditing ? 'Editar' : 'Agregar' }} Curso</h2>
+  
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+    <div *ngIf="loading" class="text-center my-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  
+    <form [formGroup]="cursoForm" (ngSubmit)="onSubmit()">
+      <div class="card">
+        <div class="card-body">
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre del Curso *</label>
+            <input type="text" class="form-control" id="nombre" formControlName="nombre">
+            <div *ngIf="cursoForm.get('nombre')?.invalid && cursoForm.get('nombre')?.touched" class="text-danger">
+              El nombre del curso es requerido
+            </div>
+          </div>
+  
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="fechaInicio" class="form-label">Fecha de Inicio *</label>
+              <input type="date" class="form-control" id="fechaInicio" formControlName="fechaInicio">
+              <div *ngIf="cursoForm.get('fechaInicio')?.invalid && cursoForm.get('fechaInicio')?.touched" class="text-danger">
+                La fecha de inicio es requerida
+              </div>
+            </div>
+  
+            <div class="col-md-6 mb-3">
+              <label for="fechaFin" class="form-label">Fecha de Finalización *</label>
+              <input type="date" class="form-control" id="fechaFin" formControlName="fechaFin">
+              <div *ngIf="cursoForm.get('fechaFin')?.invalid && cursoForm.get('fechaFin')?.touched" class="text-danger">
+                La fecha de finalización es requerida
+              </div>
+            </div>
+          </div>
+  
+          <div class="mb-3">
+            <label for="tipoDocumento" class="form-label">Tipo de Documento *</label>
+            <select class="form-select" id="tipoDocumento" formControlName="tipoDocumento">
+              <option value="">Seleccionar tipo de documento</option>
+              <option *ngFor="let tipo of tiposDocumento" [value]="tipo">{{ tipo }}</option>
+            </select>
+            <div *ngIf="cursoForm.get('tipoDocumento')?.invalid && cursoForm.get('tipoDocumento')?.touched" class="text-danger">
+              El tipo de documento es requerido
+            </div>
+          </div>
+  
+          <div class="mb-3">
+            <label for="observaciones" class="form-label">Observaciones</label>
+            <textarea class="form-control" id="observaciones" rows="3" formControlName="observaciones"></textarea>
+          </div>
+        </div>
+      </div>
+  
+      <div class="d-flex justify-content-between mt-3">
+        <button type="button" class="btn btn-secondary" [routerLink]="['/empleados', empleadoId, 'cursos']">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="cursoForm.invalid || loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          {{ isEditing ? 'Guardar Cambios' : 'Crear Curso' }}
+        </button>
+      </div>
+    </form>
+  </div>

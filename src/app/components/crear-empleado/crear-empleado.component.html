@@ -46,6 +46,19 @@
                 <input type="date" class="form-control" id="fechaNacimiento" formControlName="fechaNacimiento">
               </div>
   
+              
+              <div class="mb-3">
+                <label for="sexo" class="form-label">Sexo *</label>
+                <select class="form-select" id="sexo" formControlName="sexo">
+                  <option value="" disabled selected>Seleccionar</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Femenino">Femenino</option>
+                </select>
+                <div *ngIf="sexoNoValido" class="text-danger">
+                  Debe seleccionar un sexo
+                </div>
+              </div>
+  
               <!-- Foto del empleado -->
               <div class="mb-3">
                 <label for="foto" class="form-label">Foto</label>
@@ -78,8 +91,30 @@
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label for="direccion" class="form-label">Dirección *</label>
-                <input type="text" class="form-control" id="direccion" formControlName="direccion">
+                <label for="calle" class="form-label">Calle *</label>
+                <input type="text" class="form-control" id="calle" formControlName="direccion">
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="numeroExterior" class="form-label">Número Exterior</label>
+                    <input type="text" class="form-control" id="numeroExterior" formControlName="numeroExterior">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="numeroInterior" class="form-label">Número Interior</label>
+                    <input type="text" class="form-control" id="numeroInterior" formControlName="numeroInterior">
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="colonia" class="form-label">Colonia *</label>
+                <input type="text" class="form-control" id="colonia" formControlName="colonia">
+              </div>
+              <div class="mb-3">
+                <label for="codigoPostal" class="form-label">Código Postal *</label>
+                <input type="text" class="form-control" id="codigoPostal" formControlName="codigoPostal">
               </div>
   
               <div class="mb-3">
@@ -93,8 +128,18 @@
             
             <div class="col-md-6">
               <div class="mb-3">
-                <label for="telefono" class="form-label">Teléfono *</label>
-                <input type="tel" class="form-control" id="telefono" formControlName="telefono">
+                <label class="form-label">Teléfonos</label>
+                <div formArrayName="telefonos">
+                  <div class="input-group mb-2" *ngFor="let telefono of telefonosArray.controls; let i = index">
+                    <input type="tel" class="form-control" [formControlName]="i">
+                    <button type="button" class="btn btn-outline-danger" (click)="eliminarTelefono(i)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="agregarTelefono()">
+                  <i class="bi bi-plus"></i> Agregar otro teléfono
+                </button>
               </div>
   
               <div class="mb-3">
@@ -103,6 +148,64 @@
                 <small class="form-text text-muted">Este email se usará como nombre de usuario para iniciar sesión</small>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Referencias Familiares -->
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          Referencias Familiares
+        </div>
+        <div class="card-body">
+          <div formArrayName="referenciasFamiliares">
+            <div *ngFor="let ref of referenciasFamiliaresArray.controls; let i = index" [formGroupName]="i" class="border p-3 mb-3 rounded">
+              <div class="d-flex justify-content-between">
+                <h6>Referencia #{{i+1}}</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarReferencia(i)">
+                  <i class="bi bi-trash"></i> Eliminar
+                </button>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre completo *</label>
+                    <input type="text" class="form-control" formControlName="nombre">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Parentesco *</label>
+                    <select class="form-select" formControlName="parentesco">
+                      <option value="">Seleccionar</option>
+                      <option value="Padre">Padre</option>
+                      <option value="Madre">Madre</option>
+                      <option value="Hermano/a">Hermano/a</option>
+                      <option value="Cónyuge">Cónyuge</option>
+                      <option value="Hijo/a">Hijo/a</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Teléfono *</label>
+                    <input type="tel" class="form-control" formControlName="telefono">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" formControlName="email">
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <button type="button" class="btn btn-outline-primary" (click)="agregarReferencia()">
+              <i class="bi bi-plus"></i> Agregar referencia familiar
+            </button>
           </div>
         </div>
       </div>

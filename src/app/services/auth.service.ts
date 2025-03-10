@@ -16,45 +16,79 @@ export class AuthService {
     private router: Router
   ) { }
   
-login(username: string, password: string): Observable<any> {
-  return this.http.post<any>(`${this.apiUrl}/login`, { username, password })
-    .pipe(
-      tap(res => {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('user', JSON.stringify(res.user));
-        localStorage.setItem('userRole', res.user.rol);
-        
-        // Redirigir según el rol
-        if (res.user.rol === 'empleado') {
-          this.router.navigate(['/perfil']);
-        } else {
-          this.router.navigate(['/empleados']);
-        }
-      })
-    );
-}
+  login(username: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, { username, password })
+      .pipe(
+        tap(res => {
+          if (res && res.token) {
+            localStorage.setItem('token', res.token);
+            localStorage.setItem('user', JSON.stringify(res.user));
+            localStorage.setItem('userRole', res.user.rol);
+            localStorage.setItem('lastAuth', new Date().getTime().toString());
+            
+            // Redirigir según el rol
+            if (res.user.rol === 'empleado') {
+              this.router.navigate(['/perfil']);
+            } else {
+              this.router.navigate(['/empleados']);
+            }
+          }
+        })
+      );
+  }
 
-crearUsuario(datos: any): Observable<any> {
-  return this.http.post<any>(`${this.apiUrl}/users`, datos);
-}
+  crearUsuario(datos: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users`, datos);
+  }
   
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
-    this.router.navigate(['/login']);
+    localStorage.removeItem('lastAuth');
+    
+    // Usar window.location.href para forzar un refresh completo
+    window.location.href = '/login';
   }
   
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    const lastAuth = localStorage.getItem('lastAuth');
+    
+    if (!token || !lastAuth) {
+      return false;
+    }
+    
+    // Verificar si han pasado más de 24 horas desde la última autenticación
+    const now = new Date().getTime();
+    const lastAuthTime = parseInt(lastAuth, 10);
+    const hoursDiff = (now - lastAuthTime) / (1000 * 60 * 60);
+    
+    if (hoursDiff > 24) {
+      // Si han pasado más de 24 horas, cerrar sesión automáticamente
+      this.logout();
+      return false;
+    }
+    
+    return true;
   }
   
   getCurrentUser(): any {
     const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    if (!user) {
+      return null;
+    }
+    
+    try {
+      return JSON.parse(user);
+    } catch (e) {
+      console.error('Error al parsear el usuario:', e);
+      this.logout();
+      return null;
+    }
   }
   
-  // Nuevo método para obtener el rol del usuario
+  // Método para obtener el rol del usuario
   getUserRole(): string {
     // Primero intentamos obtener el rol del localStorage directamente
     const roleFromStorage = localStorage.getItem('userRole');
@@ -64,7 +98,7 @@ crearUsuario(datos: any): Observable<any> {
     
     // Si no está en localStorage, intentamos obtenerlo del objeto user
     const user = this.getCurrentUser();
-    return user ? user.rol : 'empleado'; // Por defecto, consideramos al usuario como empleado
+    return user ? user.rol : '';
   }
   
   hasRole(role: string): boolean {
@@ -74,5 +108,10 @@ crearUsuario(datos: any): Observable<any> {
   
   getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  // Nuevo método para actualizar el timestamp de última autenticación
+  refreshAuthTimestamp(): void {
+    localStorage.setItem('lastAuth', new Date().getTime().toString());
   }
 }

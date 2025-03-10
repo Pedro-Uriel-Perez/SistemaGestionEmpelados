@@ -1,26 +1,52 @@
 <div class="container">
+    <!-- Botón de cierre de sesión -->
+    <div class="text-end mb-3">
+      <button class="btn btn-danger" (click)="cerrarSesion()">
+        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+      </button>
+    </div>
+  
+    <!-- Loader y mensajes de error -->
     <div *ngIf="cargando" class="text-center my-5">
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
       <p class="mt-2">Cargando su información...</p>
+      <button class="btn btn-warning mt-3" (click)="forzarSalida()">
+        ¿Problemas para cargar? Haga clic aquí
+      </button>
     </div>
   
     <div *ngIf="error" class="alert alert-danger">
       {{ error }}
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="forzarSalida()">
+        Volver al inicio de sesión
+      </button>
     </div>
   
+    <div *ngIf="exito" class="alert alert-success">
+      {{ exito }}
+    </div>
+  
+    <!-- Contenido principal -->
     <div *ngIf="!cargando && !error && empleado">
       <div class="row mb-4">
-        <div class="col-md-12">
-          <h2>Mi Perfil</h2>
-          <p class="lead">Bienvenido(a) {{ empleado.nombre }} {{ empleado.apellidoPaterno }}</p>
+        <div class="col-md-12 d-flex justify-content-between align-items-center">
+          <div>
+            <h2>Mi Perfil</h2>
+            <p class="lead">Bienvenido(a) {{ empleado.nombre }} {{ empleado.apellidoPaterno }}</p>
+          </div>
+          <div *ngIf="!modoEdicion">
+            <button class="btn btn-primary" (click)="activarModoEdicion()">
+              <i class="bi bi-pencil"></i> Editar mi información
+            </button>
+          </div>
         </div>
       </div>
   
       <!-- Información General -->
       <div class="card mb-4">
-        <div class="card-header">
+        <div class="card-header bg-primary text-white">
           <h5>Mi Información</h5>
         </div>
         <div class="card-body">
@@ -52,94 +78,317 @@
                 <li class="list-group-item"><strong>Puesto:</strong> {{ empleado.puesto }}</li>
                 <li class="list-group-item"><strong>Departamento:</strong> {{ empleado.departamento }}</li>
                 <li class="list-group-item"><strong>Fecha de Ingreso:</strong> {{ empleado.fechaIngreso | date }}</li>
+                <li class="list-group-item"><strong>Sexo:</strong> {{ empleado.sexo }}</li>
               </ul>
             </div>
           </div>
         </div>
       </div>
   
-      <!-- Datos Personales -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5>Datos Personales</h5>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <p><strong>Fecha de Nacimiento:</strong> {{ empleado.fechaNacimiento | date }}</p>
-              <p><strong>Dirección:</strong> {{ empleado.direccion }}</p>
-              <p><strong>Ciudad:</strong> {{ empleado.ciudad }}</p>
+      <!-- Modo Vista -->
+      <div *ngIf="!modoEdicion">
+        <!-- Datos Personales -->
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5>Datos Personales</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>Fecha de Nacimiento:</strong> {{ empleado.fechaNacimiento | date }}</p>
+                <p><strong>Dirección:</strong> {{ empleado.direccion }}</p>
+                <p><strong>Ciudad:</strong> {{ empleado.ciudad }}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Teléfonos:</strong></p>
+                <ul *ngIf="empleado.telefonos && empleado.telefonos.length > 0">
+                  <li *ngFor="let tel of empleado.telefonos">
+                    {{ tel.numero }} ({{ tel.tipo }})
+                  </li>
+                </ul>
+                <p *ngIf="!empleado.telefonos || empleado.telefonos.length === 0">
+                  <em>No hay teléfonos registrados</em>
+                </p>
+                
+                <p><strong>Email:</strong> {{ empleado.email }}</p>
+              </div>
             </div>
-            <div class="col-md-6">
-              <p><strong>Teléfono:</strong> {{ empleado.telefono }}</p>
-              <p><strong>Email:</strong> {{ empleado.email }}</p>
+          </div>
+        </div>
+  
+        <!-- Referencias Familiares -->
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5>Referencias Familiares</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="empleado.referenciasFamiliares && empleado.referenciasFamiliares.length > 0" class="row">
+              <div class="col-md-6 mb-3" *ngFor="let referencia of empleado.referenciasFamiliares">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <h6>{{ referencia.nombre }}</h6>
+                    <p><strong>Parentesco:</strong> {{ referencia.parentesco }}</p>
+                    <p><strong>Teléfono:</strong> {{ referencia.telefono }}</p>
+                    <p *ngIf="referencia.email"><strong>Email:</strong> {{ referencia.email }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="!empleado.referenciasFamiliares || empleado.referenciasFamiliares.length === 0" class="alert alert-info">
+              No hay referencias familiares registradas
             </div>
           </div>
         </div>
       </div>
   
+      <!-- Modo Edición -->
+      <div *ngIf="modoEdicion">
+        <form [formGroup]="formularioEdicion" (ngSubmit)="guardarCambios()">
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5>Editar Datos Personales</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="direccion" class="form-label">Dirección *</label>
+                    <input type="text" class="form-control" id="direccion" formControlName="direccion">
+                    <div *ngIf="direccionNoValida" class="text-danger">
+                      La dirección es requerida
+                    </div>
+                  </div>
+  
+                  <div class="mb-3">
+                    <label for="ciudad" class="form-label">Ciudad *</label>
+                    <input type="text" class="form-control" id="ciudad" formControlName="ciudad">
+                    <div *ngIf="ciudadNoValida" class="text-danger">
+                      La ciudad es requerida
+                    </div>
+                  </div>
+                </div>
+  
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="email" class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="email" formControlName="email">
+                    <div *ngIf="emailNoValido" class="text-danger">
+                      Ingrese un email válido
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Teléfonos -->
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5>Teléfonos</h5>
+            </div>
+            <div class="card-body">
+              <div formArrayName="telefonos">
+                <div *ngFor="let telefono of telefonosArray.controls; let i = index" [formGroupName]="i" class="row mb-2">
+                  <div class="col-md-5">
+                    <input type="tel" class="form-control" formControlName="numero" placeholder="Número de teléfono">
+                  </div>
+                  <div class="col-md-5">
+                    <select class="form-select" formControlName="tipo">
+                      <option value="Personal">Personal</option>
+                      <option value="Trabajo">Trabajo</option>
+                      <option value="Casa">Casa</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger" (click)="eliminarTelefono(i)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline-primary mt-2" (click)="agregarTelefono()">
+                <i class="bi bi-plus"></i> Agregar teléfono
+              </button>
+            </div>
+          </div>
+  
+          <!-- Referencias Familiares -->
+          <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+              <h5>Referencias Familiares</h5>
+            </div>
+            <div class="card-body">
+              <div formArrayName="referenciasFamiliares">
+                <div *ngFor="let ref of referenciasFamiliaresArray.controls; let i = index" [formGroupName]="i" class="border p-3 mb-3 rounded">
+                  <div class="d-flex justify-content-between">
+                    <h6>Referencia #{{i+1}}</h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarReferencia(i)">
+                      <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Nombre completo *</label>
+                        <input type="text" class="form-control" formControlName="nombre">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Parentesco *</label>
+                        <select class="form-select" formControlName="parentesco">
+                          <option value="">Seleccionar</option>
+                          <option value="Padre">Padre</option>
+                          <option value="Madre">Madre</option>
+                          <option value="Hermano/a">Hermano/a</option>
+                          <option value="Cónyuge">Cónyuge</option>
+                          <option value="Hijo/a">Hijo/a</option>
+                          <option value="Otro">Otro</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Teléfono *</label>
+                        <input type="tel" class="form-control" formControlName="telefono">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" formControlName="email">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <button type="button" class="btn btn-outline-primary" (click)="agregarReferencia()">
+                  <i class="bi bi-plus"></i> Agregar referencia familiar
+                </button>
+              </div>
+            </div>
+          </div>
+  
+          <div class="d-flex justify-content-between mt-4 mb-5">
+            <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="formularioEdicion.invalid || guardando">
+              <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+  
       <!-- Cursos -->
-      <div class="card mb-4" *ngIf="empleado.cursos && empleado.cursos.length > 0">
-        <div class="card-header">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
           <h5>Mis Cursos</h5>
+          <button class="btn btn-sm btn-light" (click)="toggleFormularioCurso()">
+            <i class="bi" [ngClass]="mostrarFormCurso ? 'bi-dash' : 'bi-plus'"></i>
+            {{ mostrarFormCurso ? 'Cancelar' : 'Agregar curso' }}
+          </button>
         </div>
         <div class="card-body">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
-                <th>Documento</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let curso of empleado.cursos">
-                <td>{{ curso.nombre }}</td>
-                <td>{{ curso.fechaInicio | date }}</td>
-                <td>{{ curso.fechaFin | date }}</td>
-                <td>{{ curso.documento }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Formulario para agregar curso -->
+          <div *ngIf="mostrarFormCurso" class="mb-4 p-3 border rounded">
+            <h6>Registrar nuevo curso</h6>
+            <form [formGroup]="formularioCurso" (ngSubmit)="agregarCurso()">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Nombre del curso *</label>
+                  <input type="text" class="form-control" formControlName="nombre">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">Fecha Inicio *</label>
+                  <input type="date" class="form-control" formControlName="fechaInicio">
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label class="form-label">Fecha Fin *</label>
+                  <input type="date" class="form-control" formControlName="fechaFin">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Tipo de documento</label>
+                  <select class="form-select" formControlName="tipoDocumento">
+                    <option value="">Ninguno</option>
+                    <option value="Certificado">Certificado</option>
+                    <option value="Diploma">Diploma</option>
+                    <option value="Constancia">Constancia</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Observaciones</label>
+                  <textarea class="form-control" formControlName="observaciones" rows="2"></textarea>
+                </div>
+                <div class="col-12 text-end">
+                  <button type="submit" class="btn btn-primary" [disabled]="formularioCurso.invalid || guardando">
+                    <span *ngIf="guardando" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Guardar Curso
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+  
+          <!-- Listado de cursos -->
+          <div *ngIf="empleado.cursos && empleado.cursos.length > 0">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Fecha Inicio</th>
+                  <th>Fecha Fin</th>
+                  <th>Documento</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let curso of empleado.cursos">
+                  <td>{{ curso.nombre }}</td>
+                  <td>{{ curso.fechaInicio | date }}</td>
+                  <td>{{ curso.fechaFin | date }}</td>
+                  <td>{{ curso.tipoDocumento || 'No especificado' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div *ngIf="!empleado.cursos || empleado.cursos.length === 0" class="alert alert-info">
+            No tiene cursos registrados. Puede agregar uno haciendo clic en el botón "Agregar curso".
+          </div>
         </div>
       </div>
   
       <!-- Actividades -->
       <div class="card mb-4" *ngIf="empleado.actividades && empleado.actividades.length > 0">
-        <div class="card-header">
-          <h5>Mis Actividades</h5>
-        </div>
-        <div class="card-body">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Fecha</th>
-                <th>Participación</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let actividad of empleado.actividades">
-                <td>{{ actividad.nombre }}</td>
-                <td>{{ actividad.fecha | date }}</td>
-                <td>
-                  <span class="badge" [ngClass]="actividad.participacion ? 'bg-success' : 'bg-danger'">
-                    {{ actividad.participacion ? 'Sí' : 'No' }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+         <div class="card-header bg-primary text-white">
+        <h5>Mis Actividades</h5>
       </div>
-       
-  
-      
-  <!-- Botón de cierre de sesión - agrega esto cerca del final -->
-  <div class="mt-4 mb-5">
-    <button class="btn btn-danger" (click)="cerrarSesion()">
-      <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-    </button>
+      <div class="card-body">
+        <div class="alert alert-info mb-3">
+          Las actividades son registradas por el departamento de Recursos Humanos.
+        </div>
+        
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Fecha</th>
+              <th>Participación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let actividad of empleado.actividades">
+              <td>{{ actividad.nombre }}</td>
+              <td>{{ actividad.fecha | date }}</td>
+              <td>
+                <span class="badge" [ngClass]="actividad.participo || actividad.participacion ? 'bg-success' : 'bg-danger'">
+                  {{ actividad.participo || actividad.participacion ? 'Sí' : 'No' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-
+</div>

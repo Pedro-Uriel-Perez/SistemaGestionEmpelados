@@ -1,0 +1,57 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Cursos de {{ empleado?.nombre }} {{ empleado?.apellidoPaterno }}</h2>
+      <div>
+        <button *ngIf="canEdit" class="btn btn-primary me-2" [routerLink]="['/empleados', empleadoId, 'cursos', 'nuevo']">
+          Agregar Curso
+        </button>
+        <button class="btn btn-secondary" [routerLink]="['/empleados', 'ver', empleadoId]">
+          Volver
+        </button>
+      </div>
+    </div>
+  
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+    <div *ngIf="loading" class="text-center my-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  
+    <div *ngIf="!loading">
+      <div *ngIf="cursos.length === 0" class="alert alert-info">
+        No hay cursos registrados para este empleado.
+      </div>
+  
+      <div class="table-responsive" *ngIf="cursos.length > 0">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Nombre del Curso</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Fin</th>
+              <th>Tipo de Documento</th>
+              <th *ngIf="canEdit">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let curso of cursos">
+              <td>{{ curso.nombre }}</td>
+              <td>{{ curso.fechaInicio | date }}</td>
+              <td>{{ curso.fechaFin | date }}</td>
+              <td>{{ curso.tipoDocumento }}</td>
+              <td *ngIf="canEdit">
+                <button class="btn btn-sm btn-primary me-1" [routerLink]="['/empleados', empleadoId, 'cursos', 'editar', curso._id]">
+                  Editar
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="eliminarCurso(curso._id)">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
