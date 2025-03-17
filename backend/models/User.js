@@ -12,16 +12,11 @@ const UserSchema = new mongoose.Schema({
   },
   rol: {
     type: String,
-    enum: ['admin', 'recursosHumanos', 'empleado'],
-    default: 'empleado'
+    enum: ['recursosHumanos', 'empleado'],
   },
   empleado: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Empleado'
-  },
-  requiereCambioPassword: {
-    type: Boolean,
-    default: true
   },
   createdAt: {
     type: Date,

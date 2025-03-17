@@ -2,7 +2,7 @@ const empleadoService = require('../services/empleadoService');
 const User = require('../models/User');
 const Empleado = require('../models/Empleado');
 const bcrypt = require('bcryptjs');
-const emailService = require('../services/emailService')
+const emailService = require('../services/emailService');
 
 exports.crearEmpleado = async (req, res) => {
   try {
@@ -25,6 +25,7 @@ exports.crearEmpleado = async (req, res) => {
     const empleado = await empleadoService.crearEmpleado(empleadoData, fotoPath);
     res.status(201).json({ success: true, data: empleado });
   } catch (error) {
+    console.error('Error al crear empleado:', error);
     res.status(500).json({ success: false, message: 'Error al crear empleado', error: error.message });
   }
 };
@@ -110,17 +111,22 @@ exports.crearUsuario = async (req, res) => {
   const { empleadoId, username, password, rol } = req.body;
   
   try {
-    if (!['recursosHumanos', 'empleado'].includes(rol)) return res.status(400).json({ message: 'Rol no válido' });
+    if (!['recursosHumanos', 'empleado'].includes(rol)) 
+      return res.status(400).json({ message: 'Rol no válido' });
     
     const empleado = await Empleado.findById(empleadoId);
-    if (!empleado) return res.status(404).json({ message: 'Empleado no encontrado' });
+    if (!empleado) 
+      return res.status(404).json({ message: 'Empleado no encontrado' });
     
+    // Verificar si ya existe un usuario para este empleado
     const usuarioExistente = await User.findOne({ empleado: empleadoId });
-    if (usuarioExistente) return res.status(400).json({ message: 'Ya existe un usuario para este empleado' });
+    if (usuarioExistente) 
+      return res.status(400).json({ message: 'Ya existe un usuario para este empleado' });
     
-    const usersWithSameUsername = await User.find({ username });
-    const conflictingUsers = usersWithSameUsername.filter(u => !u.empleado || u.empleado.toString() !== empleadoId.toString());
-    if (conflictingUsers.length > 0) return res.status(400).json({ message: 'Ese nombre de usuario ya está en uso' });
+    // Verificar si el nombre de usuario ya está en uso
+    const usernameExistente = await User.findOne({ username });
+    if (usernameExistente)
+      return res.status(400).json({ message: 'Ese nombre de usuario ya está en uso' });
     
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -135,15 +141,69 @@ exports.crearUsuario = async (req, res) => {
     
     await newUser.save();
 
-    const nombreCompleto = `${empleado.nombre} ${empleado.apellidoPaterno} ${empleado.apellidoMaterno}`;
-    const emailEnviado = await emailService.enviarCredencialesPorEmail(nombreCompleto, empleado.email, username, password);
-
-    res.status(201).json({ 
-      message: 'Usuario creado con éxito',
-      emailEnviado,
-      user: { username: newUser.username, rol: newUser.rol, empleado: newUser.empleado }
-    });
+    try {
+      const nombreCompleto = `${empleado.nombre} ${empleado.apellidoPaterno} ${empleado.apellidoMaterno}`;
+      const emailEnviado = await emailService.enviarCredencialesPorEmail(nombreCompleto, empleado.email, username, password);
+      
+      res.status(201).json({
+        message: 'Usuario creado con éxito',
+        emailEnviado,
+        user: { username: newUser.username, rol: newUser.rol, empleado: newUser.empleado }
+      });
+    } catch (emailError) {
+      console.error('Error al enviar email:', emailError);
+      res.status(201).json({
+        message: 'Usuario creado con éxito, pero no se pudieron enviar las credenciales por email',
+        emailEnviado: false,
+        error: emailError.message,
+        user: { username: newUser.username, rol: newUser.rol, empleado: newUser.empleado }
+      });
+    }
   } catch (err) {
+    console.error('Error al crear usuario:', err);
     res.status(500).json({ message: 'Error del servidor', error: err.message });
+  }
+};
+
+exports.actualizarMiPerfil = async (req, res) => {
+  try {
+    // Obtener el ID del empleado desde el token de autenticación
+    const usuario = await User.findById(req.user.id);
+    if (!usuario || !usuario.empleado) {
+      return res.status(404).json({ success: false, message: 'No se encontró el perfil asociado' });
+    }
+    
+    const empleadoId = usuario.empleado;
+    
+    // Procesar los datos recibidos
+    const datosProcesados = {
+      direccion: req.body.direccion,
+      ciudad: req.body.ciudad,
+      email: req.body.email
+    };
+    
+    // Procesar teléfonos y referencias familiares
+    ['telefonos', 'referenciasFamiliares'].forEach(campo => {
+      if (req.body[campo]) {
+        try { 
+          datosProcesados[campo] = typeof req.body[campo] === 'string' 
+            ? JSON.parse(req.body[campo]) 
+            : req.body[campo]; 
+        } catch (e) {
+          console.error(`Error al procesar ${campo}:`, e);
+        }
+      }
+    });
+    
+    // Si hay una foto, procesarla
+    const fotoPath = req.file ? req.file.path : null;
+    
+    // Actualizar el empleado
+    const empleadoActualizado = await empleadoService.actualizarEmpleado(empleadoId, datosProcesados, fotoPath);
+    
+    res.status(200).json({ success: true, data: empleadoActualizado });
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar perfil', error: error.message });
   }
 };

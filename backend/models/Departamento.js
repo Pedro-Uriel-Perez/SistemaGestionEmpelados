@@ -1,17 +1,20 @@
 const mongoose = require('mongoose');
 
 const DepartamentoSchema = new mongoose.Schema({
-  nombre: {
+  nombreDepartamento: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    trim: true
   },
-  activo: {
+  esRecursosHumanos: {
     type: Boolean,
-    default: true
-  }
-}, {
-  timestamps: true
-});
+    default: false
+  },
+  puestos: [{
+    type: String,
+    trim: true
+  }]
+})
 
 module.exports = mongoose.model('Departamento', DepartamentoSchema);

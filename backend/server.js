@@ -27,10 +27,10 @@ app.use('/api/empleados', empleadosRoutes);
 
 // Rutas de cursos y actividades
 app.use('/api/empleados', cursosRoutes);
-app.use('/api/empleados', actividadesRoutes);
 
-// Rutas de catálogos
-app.use('/api/catalogos', require('./routes/catalogos'));
+app.use('/api/actividades', actividadesRoutes);
+
+app.use('/api/departamentos', require('./routes/departamentos'));
 
 // Ruta de prueba
 app.get('/', (req, res) => {

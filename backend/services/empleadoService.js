@@ -105,7 +105,6 @@ const crearEmpleado = async (empleadoData, fotoPath) => {
 const obtenerEmpleados = async (filtros = {}) => {
   const { nombre, departamento, puesto, estado, clave } = filtros;
   const filtro = {};
-  
   if (nombre) filtro.nombre = { $regex: nombre, $options: 'i' };
   if (departamento) filtro.departamento = departamento;
   if (puesto) filtro.puesto = puesto;

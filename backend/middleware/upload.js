@@ -26,7 +26,7 @@ const fileFilter = (req, file, cb) => {
   cb(new Error('Solo se permiten archivos de imagen'));
 };
 
-// Exportar configuración de multer
+// configuración de multer
 const upload = multer({ 
   storage: storage,
   limits: { fileSize: 5000000 }, // 5MB máximo

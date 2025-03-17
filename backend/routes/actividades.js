@@ -1,17 +1,16 @@
-// routes/actividades.js
 const express = require('express');
 const router = express.Router();
 const actividadController = require('../controllers/actividadController');
 const auth = require('../middleware/auth');
 const { checkRole } = require('../middleware/role');
 
-// Solo RH puede registrar, actualizar o eliminar actividades
-router.post('/:empleadoId/actividades', auth, checkRole('recursosHumanos'), actividadController.registrarActividad);
-router.put('/:empleadoId/actividades/:actividadId', auth, checkRole('recursosHumanos'), actividadController.actualizarActividad);
-router.delete('/:empleadoId/actividades/:actividadId', auth, checkRole('recursosHumanos'), actividadController.eliminarActividad);
+// Solo catálogo y creación de actividades (solo RH)
+router.get('/', auth, checkRole('recursosHumanos'), actividadController.listarActividades);
+router.post('/', auth, checkRole('recursosHumanos'), actividadController.crearActividad);
 
-// Todos pueden ver actividades (con restricciones por rol en el controlador)
-router.get('/:empleadoId/actividades', auth, actividadController.obtenerActividades);
-router.get('/:empleadoId/actividades/:actividadId', auth, actividadController.obtenerActividad);
+// Asignar y gestionar participación (solo RH)
+router.post('/asignar/:empleadoId', auth, checkRole('recursosHumanos'), actividadController.asignarActividad);
+router.put('/participacion/:empleadoId/:actividadId', auth, checkRole('recursosHumanos'), actividadController.actualizarParticipacion);
+router.get('/empleado/:empleadoId', auth, checkRole('recursosHumanos'), actividadController.obtenerActividadesEmpleado);
 
 module.exports = router;

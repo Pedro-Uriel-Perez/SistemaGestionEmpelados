@@ -41,7 +41,7 @@ const EmpleadoSchema = new mongoose.Schema({
   email: String,
   fechaIngreso: {
     type: Date,
-    default: Date.now
+    default: new Date()
   },
   ciudad: String,
   puesto: {
