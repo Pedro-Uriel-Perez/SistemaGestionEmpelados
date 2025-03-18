@@ -22,7 +22,7 @@
                 <label for="nombre" class="form-label">Nombre(s) *</label>
                 <input type="text" class="form-control" id="nombre" formControlName="nombre">
                 <div *ngIf="nombreNoValido" class="text-danger">
-                  El nombre es requerido y debe tener al menos 2 caracteres
+                  El nombre es requerido
                 </div>
               </div>
   
@@ -30,7 +30,7 @@
                 <label for="apellidoPaterno" class="form-label">Apellido Paterno *</label>
                 <input type="text" class="form-control" id="apellidoPaterno" formControlName="apellidoPaterno">
                 <div *ngIf="apellidoPaternoNoValido" class="text-danger">
-                  El apellido paterno es requerido y debe tener al menos 2 caracteres
+                  El apellido paterno es requerido
                 </div>
               </div>
   
@@ -44,9 +44,11 @@
               <div class="mb-3">
                 <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento *</label>
                 <input type="date" class="form-control" id="fechaNacimiento" formControlName="fechaNacimiento">
+                <div *ngIf="fechaNacimientoNoValido" class="text-danger">
+                  La fecha de nacimiento es requerida
+                </div>
               </div>
   
-              
               <div class="mb-3">
                 <label for="sexo" class="form-label">Sexo *</label>
                 <select class="form-select" id="sexo" formControlName="sexo">
@@ -74,7 +76,7 @@
                     id="foto" 
                     accept="image/*"
                     (change)="onFileSelected($event)">
-                  <small class="form-text text-muted">Seleccione una imagen (JPG, PNG, GIF)</small>
+                  <small class="form-text text-muted">Seleccione una imagen (   JPEG, JPG, PNG )</small>
                 </div>
               </div>
             </div>
@@ -217,32 +219,38 @@
         </div>
         <div class="card-body">
           <div class="row">
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label for="fechaIngreso" class="form-label">Fecha de Ingreso *</label>
-                <input type="date" class="form-control" id="fechaIngreso" formControlName="fechaIngreso">
+            <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="departamento" class="form-label">Departamento *</label>
+                  <select class="form-select" id="departamento" formControlName="departamento">
+                    <option value="">Seleccionar departamento</option>
+                    <option *ngFor="let depto of departamentos" [value]="depto._id">
+                      {{ depto.nombreDepartamento }}
+                    </option>
+                  </select>
+                  <div *ngIf="departamentoNoValido" class="text-danger">
+                    Debe seleccionar un departamento
+                  </div>
+                </div>
               </div>
-            </div>
   
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label for="puesto" class="form-label">Puesto *</label>
-                <select class="form-select" id="puesto" formControlName="puesto">
-                  <option value="">Seleccionar puesto</option>
-                  <option *ngFor="let puesto of puestos" [value]="puesto">{{ puesto }}</option>
-                </select>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="puesto" class="form-label">Puesto *</label>
+                  <select class="form-select" id="puesto" formControlName="puesto" [disabled]="!empleadoForm.get('departamento')?.value">
+                    <option value="">Seleccionar puesto</option>
+                    <option *ngFor="let puesto of puestos" [value]="puesto">
+                      {{ puesto }}
+                    </option>
+                  </select>
+                  <div *ngIf="puestoNoValido" class="text-danger">
+                    Debe seleccionar un puesto
+                  </div>
+                </div>
               </div>
-            </div>
   
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label for="departamento" class="form-label">Departamento *</label>
-                <select class="form-select" id="departamento" formControlName="departamento">
-                  <option value="">Seleccionar departamento</option>
-                  <option *ngFor="let departamento of departamentos" [value]="departamento">{{ departamento }}</option>
-                </select>
-              </div>
-            </div>
+            <!-- Campo oculto para fechaIngreso (se asigna automáticamente) -->
+            <input type="hidden" formControlName="fechaIngreso">
           </div>
         </div>
       </div>
@@ -267,15 +275,9 @@
               </div>
             </div>
             
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label for="rol" class="form-label">Rol</label>
-                <select class="form-select" id="rol" formControlName="rol">
-                  <option *ngFor="let rol of roles" [value]="rol">
-                    {{ rol === 'empleado' ? 'Empleado' : 'Recursos Humanos' }}
-                  </option>
-                </select>
-              </div>
+            <!-- Campo rol oculto (se asigna automáticamente) -->
+            <div class="col-md-6" style="display: none;">
+              <input type="hidden" formControlName="rol">
             </div>
           </div>
         </div>

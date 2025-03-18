@@ -1,4 +1,3 @@
-// services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -30,8 +29,7 @@ export class AuthService {
             if (res.user.rol === 'empleado') {
               this.router.navigate(['/perfil']);
             } else {
-              this.router.navigate(['/empleados']);
-            }
+              this.router.navigate(['/empleados']);}
           }
         })
       );
@@ -47,8 +45,7 @@ export class AuthService {
     localStorage.removeItem('userRole');
     localStorage.removeItem('lastAuth');
     
-    // Usar window.location.href para forzar un refresh completo
-    window.location.href = '/login';
+      window.location.href = '/login';
   }
   
   isLoggedIn(): boolean {
@@ -99,6 +96,10 @@ export class AuthService {
     // Si no está en localStorage, intentamos obtenerlo del objeto user
     const user = this.getCurrentUser();
     return user ? user.rol : '';
+  }
+
+  actualizarRolUsuario(datos: { empleadoId: string, rol: string }): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/users/rol`, datos);
   }
   
   hasRole(role: string): boolean {

@@ -2,7 +2,7 @@ export interface Usuario {
     _id?: string;
     username: string;
     password?: string;
-    rol: 'admin' | 'recursosHumanos' | 'empleado';
+    rol: 'recursosHumanos' | 'empleado';
     empleado?: string;
   }
   

@@ -150,15 +150,49 @@
             </div>
             <div class="card-body">
               <div class="row">
+                <!-- Campos de dirección -->
                 <div class="col-md-6">
                   <div class="mb-3">
-                    <label for="direccion" class="form-label">Dirección *</label>
-                    <input type="text" class="form-control" id="direccion" formControlName="direccion">
-                    <div *ngIf="direccionNoValida" class="text-danger">
-                      La dirección es requerida
+                    <label for="calle" class="form-label">Calle *</label>
+                    <input type="text" class="form-control" id="calle" formControlName="calle">
+                    <div *ngIf="calleNoValida" class="text-danger">
+                      La calle es requerida
                     </div>
                   </div>
-  
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="numeroExterior" class="form-label">Número Exterior</label>
+                        <input type="text" class="form-control" id="numeroExterior" formControlName="numeroExterior">
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="numeroInterior" class="form-label">Número Interior</label>
+                        <input type="text" class="form-control" id="numeroInterior" formControlName="numeroInterior">
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="colonia" class="form-label">Colonia *</label>
+                    <input type="text" class="form-control" id="colonia" formControlName="colonia">
+                    <div *ngIf="coloniaNoValida" class="text-danger">
+                      La colonia es requerida
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="codigoPostal" class="form-label">Código Postal *</label>
+                    <input type="text" class="form-control" id="codigoPostal" formControlName="codigoPostal">
+                    <div *ngIf="codigoPostalNoValido" class="text-danger">
+                      El código postal es requerido
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
                   <div class="mb-3">
                     <label for="ciudad" class="form-label">Ciudad *</label>
                     <input type="text" class="form-control" id="ciudad" formControlName="ciudad">
@@ -166,17 +200,9 @@
                       La ciudad es requerida
                     </div>
                   </div>
-                </div>
   
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="email" class="form-label">Email *</label>
-                    <input type="email" class="form-control" id="email" formControlName="email">
-                    <div *ngIf="emailNoValido" class="text-danger">
-                      Ingrese un email válido
-                    </div>
+                  
                   </div>
-                </div>
               </div>
             </div>
           </div>
@@ -360,35 +386,32 @@
   
       <!-- Actividades -->
       <div class="card mb-4" *ngIf="empleado.actividades && empleado.actividades.length > 0">
-         <div class="card-header bg-primary text-white">
-        <h5>Mis Actividades</h5>
-      </div>
-      <div class="card-body">
-        <div class="alert alert-info mb-3">
-          Las actividades son registradas por el departamento de Recursos Humanos.
+        <div class="card-header bg-primary text-white">
+          <h5>Mis Actividades</h5>
         </div>
-        
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Fecha</th>
-              <th>Participación</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let actividad of empleado.actividades">
-              <td>{{ actividad.nombre }}</td>
-              <td>{{ actividad.fecha | date }}</td>
-              <td>
-                <span class="badge" [ngClass]="actividad.participo || actividad.participacion ? 'bg-success' : 'bg-danger'">
-                  {{ actividad.participo || actividad.participacion ? 'Sí' : 'No' }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="card-body">
+    
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th>Participación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let actividad of empleado.actividades">
+                <td>{{ actividad.nombre }}</td>
+                <td>{{ actividad.fecha | date }}</td>
+                <td>
+                  <span class="badge" [ngClass]="actividad.participo || actividad.participacion ? 'bg-success' : 'bg-danger'">
+                    {{ actividad.participo || actividad.participacion ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
-</div>

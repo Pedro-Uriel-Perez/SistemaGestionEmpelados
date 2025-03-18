@@ -1,15 +1,5 @@
 const Empleado = require('../models/Empleado');
 
-// Registrar actividad para un empleado
-const registrarActividad = async (empleadoId, actividadData) => {
-  const empleado = await Empleado.findById(empleadoId);
-  if (!empleado) {
-    throw new Error('Empleado no encontrado');
-  }
-  empleado.actividades.push(actividadData);
-  return await empleado.save();
-};
-
 // Obtener actividades de un empleado
 const obtenerActividades = async (empleadoId) => {
   const empleado = await Empleado.findById(empleadoId);
@@ -32,9 +22,7 @@ const obtenerActividadPorId = async (empleadoId, actividadId) => {
   return actividad;
 };
 
-
 module.exports = {
-  registrarActividad,
   obtenerActividades,
-  obtenerActividadPorId,
+  obtenerActividadPorId
 };

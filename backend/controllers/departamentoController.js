@@ -1,22 +1,6 @@
 const departamentoService = require('../services/departamentoService');
 
-// Inicializar datos de departamentos y puestos
-exports.inicializarDatos = async (req, res) => {
-  try {
-    const resultado = await departamentoService.crearDatosIniciales();
-    
-    res.status(200).json({
-      success: true,
-      message: resultado.message || 'Datos inicializados correctamente'
-    });
-  } catch (error) {
-    console.error('Error al inicializar datos:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Error al inicializar datos'
-    });
-  }
-};
+
 
 // Obtener todos los departamentos
 exports.obtenerDepartamentos = async (req, res) => {

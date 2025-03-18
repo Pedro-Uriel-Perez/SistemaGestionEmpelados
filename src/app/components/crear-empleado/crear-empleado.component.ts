@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { EmpleadoService } from '../../services/empleado.service';
 import { AuthService } from '../../services/auth.service';
+import { CatalogoService } from '../../services/catalogo.service';
+import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-crear-empleado',
@@ -19,8 +21,8 @@ export class CrearEmpleadoComponent implements OnInit {
   password = '';
 
   // Catálogos
-  departamentos = ['Ventas', 'Recursos Humanos', 'Administración', 'TI'];
-  puestos = ['Gerente', 'Supervisor', 'Analista', 'Asistente'];
+  departamentos: any[] = [];
+  puestos: any[] = [];
   ciudades = ['Ciudad de México', 'Guadalajara', 'Monterrey', 'Puebla'];
   roles = ['empleado', 'recursosHumanos'];
 
@@ -28,15 +30,74 @@ export class CrearEmpleadoComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private empleadoService: EmpleadoService,
-    private authService: AuthService
+    private authService: AuthService,
+    private catalogoService: CatalogoService
   ) { }
 
   ngOnInit(): void {
     this.crearFormulario();
+    this.cargarDepartamentos();
     this.password = this.generarPasswordAleatoria(8);
+    
+    // Asignar fecha de ingreso automáticamente (fecha actual)
+    const fechaActual = new Date();
+    this.empleadoForm.get('fechaIngreso')?.setValue(formatDate(fechaActual, 'yyyy-MM-dd', 'en'));
+    
+    // Escuchar cambios en el departamento seleccionado
+    this.empleadoForm.get('departamento')?.valueChanges.subscribe(
+      (departamentoId) => {
+        if (departamentoId) {
+          this.cargarPuestosPorDepartamento(departamentoId);
+          this.asignarRolSegunDepartamento(departamentoId);
+        } else {
+          this.puestos = [];
+        }
+      }
+    );
+  }
+
+  cargarDepartamentos(): void {
+    this.catalogoService.getDepartamentos().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.departamentos = response.data;
+        }
+      },
+      error: (err) => console.error('Error al cargar departamentos:', err)
+    });
+  }
+  cargarPuestosPorDepartamento(departamentoId: string): void {
+    this.catalogoService.getPuestosPorDepartamento(departamentoId).subscribe({
+      next: (response) => {
+        if (response.success) {
+          // Ahora los puestos son un array de strings
+          this.puestos = response.data;
+          
+          // Limpiar el puesto seleccionado cuando cambia el departamento
+          this.empleadoForm.get('puesto')?.setValue('');
+        }
+      },
+      error: (err) => console.error('Error al cargar puestos:', err)
+    });
+  }
+  
+
+  asignarRolSegunDepartamento(departamentoId: string): void {
+    // Buscar el departamento seleccionado
+    const departamento = this.departamentos.find(d => d._id === departamentoId);
+    
+    // Asignar rol automáticamente según el departamento
+    if (departamento && departamento.esRecursosHumanos) {
+      this.empleadoForm.get('rol')?.setValue('recursosHumanos');
+    } else {
+      this.empleadoForm.get('rol')?.setValue('empleado');
+    }
   }
 
   crearFormulario(): void {
+    // Fecha actual para asignar a fechaIngreso
+    const fechaActual = formatDate(new Date(), 'yyyy-MM-dd', 'en');
+    
     this.empleadoForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       apellidoPaterno: ['', [Validators.required, Validators.minLength(2)]],
@@ -52,7 +113,7 @@ export class CrearEmpleadoComponent implements OnInit {
       telefonos: this.fb.array([this.fb.control('', Validators.required)]),
       email: ['', [Validators.required, Validators.email]],
       referenciasFamiliares: this.fb.array([]),
-      fechaIngreso: ['', Validators.required],
+      fechaIngreso: [fechaActual, Validators.required],
       puesto: ['', Validators.required],
       departamento: ['', Validators.required],
       rol: ['empleado', Validators.required]
@@ -89,8 +150,27 @@ export class CrearEmpleadoComponent implements OnInit {
   generarNuevaPassword(): void { this.password = this.generarPasswordAleatoria(8); }
 
   generarPasswordAleatoria(longitud: number): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     return Array(longitud).fill(0).map(() => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+  }
+  
+  // Método para marcar todos los campos como tocados
+  marcarTodosComoTocados(): void {
+    Object.keys(this.empleadoForm.controls).forEach(key => {
+      const control = this.empleadoForm.get(key);
+      
+      if (control instanceof FormArray) {
+        control.controls.forEach(ctrl => {
+          if (ctrl instanceof FormGroup) {
+            Object.keys(ctrl.controls).forEach(k => ctrl.get(k)?.markAsTouched());
+          } else {
+            ctrl.markAsTouched();
+          }
+        });
+      } else {
+        control?.markAsTouched();
+      }
+    });
   }
 
   onSubmit(): void {
@@ -98,20 +178,43 @@ export class CrearEmpleadoComponent implements OnInit {
       this.marcarTodosComoTocados();
       return;
     }
-
+  
     this.cargando = true;
     this.error = '';
-    const formData = new FormData();
-    const empleadoData = this.prepararDatosEmpleado();
     
-    Object.entries(empleadoData).forEach(([key, value]) => {
-      if (key !== 'rol' && value !== undefined) {
-        formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
+    const formData = new FormData();
+    
+    // Crear una copia del formulario y asegurar que tiene la fecha de ingreso actual
+    const formValues = {...this.empleadoForm.value};
+    const today = new Date();
+    formValues.fechaIngreso = formatDate(today, 'yyyy-MM-dd', 'en');
+    
+    // Preparar los datos asegurando que se usan los nombres en lugar de IDs
+    const empleadoData = this.prepararDatosEmpleado(formValues);
+    
+    // Agregar los campos principales
+    formData.append('departamento', String(empleadoData['departamento']).trim());
+    formData.append('puesto', String(empleadoData['puesto']).trim());
+    
+    // Agregar el resto de campos al FormData
+    Object.keys(empleadoData).forEach(key => {
+      if (key !== 'rol' && key !== 'departamento' && key !== 'puesto') {
+        const value = empleadoData[key];
+        
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            formData.append(key, JSON.stringify(value));
+          } else if (value !== null) {
+            formData.append(key, String(value));
+          }
+        }
       }
     });
     
-    if (this.selectedFile) formData.append('foto', this.selectedFile);
-
+    if (this.selectedFile) {
+      formData.append('foto', this.selectedFile);
+    }
+  
     this.empleadoService.crearEmpleado(formData).subscribe({
       next: (response) => {
         const usuarioData = {
@@ -120,7 +223,7 @@ export class CrearEmpleadoComponent implements OnInit {
           password: this.password,
           rol: this.empleadoForm.get('rol')?.value
         };
-
+  
         this.authService.crearUsuario(usuarioData).subscribe({
           next: (userResponse) => {
             this.cargando = false;
@@ -130,42 +233,55 @@ export class CrearEmpleadoComponent implements OnInit {
             setTimeout(() => this.router.navigate(['/empleados']), 3000);
           },
           error: (err) => {
+            console.error('Error al crear usuario:', err);
             this.cargando = false;
             this.error = err.error?.message || 'Error al crear el usuario. El empleado fue creado pero necesitará crear el usuario manualmente.';
           }
         });
       },
-      error: () => {
-        this.error = 'Error al crear el empleado';
+      error: (err) => {
+        console.error('Error al crear empleado:', err);
+        this.error = err.error?.message || 'Error al crear el empleado';
         this.cargando = false;
       }
     });
   }
-
-  marcarTodosComoTocados() {
-    Object.values(this.empleadoForm.controls).forEach(control => {
-      if (control instanceof FormArray) {
-        control.controls.forEach(ctrl => {
-          if (ctrl instanceof FormGroup) {
-            Object.values(ctrl.controls).forEach(c => c.markAsTouched());
-          } else {
-            ctrl.markAsTouched();
-          }
-        });
-      } else {
-        control.markAsTouched();
-      }
-    });
-  }
-
-  prepararDatosEmpleado() {
-    const formValues = this.empleadoForm.value;
-    const telefonos = formValues.telefonos.map((tel: string) => ({ numero: tel, tipo: 'Personal' }));
-    const direccion = `${formValues.direccion}, ${formValues.numeroExterior || 'S/N'}${formValues.numeroInterior ? ' Int. ' + formValues.numeroInterior : ''}, ${formValues.colonia}, ${formValues.codigoPostal}, ${formValues.ciudad}`;
-    
-    return { ...formValues, direccion, telefonos, sexo: formValues.sexo };
-  }
-
+  
+prepararDatosEmpleado(formValues: any): Record<string, any> {
+  // Procesar teléfonos
+  const telefonos = formValues.telefonos.map((tel: string) => ({
+    numero: tel,
+    tipo: 'Personal'
+  }));
+  
+  // Crear dirección completa
+  const direccion = `${formValues.direccion}, ${formValues.numeroExterior || 'S/N'}${formValues.numeroInterior ? ' Int. ' + formValues.numeroInterior : ''}, ${formValues.colonia}, ${formValues.codigoPostal}`;
+  
+  // Encontrar los nombres de departamento y puesto basados en los IDs seleccionados
+  const departamentoSeleccionado = this.departamentos.find(d => d._id === formValues.departamento);
+  
+  // Con la nueva estructura, el puesto es un string seleccionado directamente
+  const puesto = formValues.puesto;
+  
+  return { 
+    nombre: formValues.nombre,
+    apellidoPaterno: formValues.apellidoPaterno,
+    apellidoMaterno: formValues.apellidoMaterno || '',
+    fechaNacimiento: formValues.fechaNacimiento,
+    sexo: formValues.sexo,
+    direccion,
+    ciudad: formValues.ciudad,
+    codigoPostal: formValues.codigoPostal,
+    colonia: formValues.colonia,
+    email: formValues.email,
+    telefonos,
+    referenciasFamiliares: formValues.referenciasFamiliares || [],
+    departamento: departamentoSeleccionado ? departamentoSeleccionado.nombreDepartamento : '',
+    puesto,
+    fechaIngreso: formValues.fechaIngreso,
+    rol: formValues.rol
+  };
+}
   volverALista(): void { this.router.navigate(['/empleados']); }
 
   // Getters para validaciones de campos

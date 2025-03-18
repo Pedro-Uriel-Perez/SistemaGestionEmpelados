@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { EmpleadoService } from '../../services/empleado.service';
+import { HttpClient } from '@angular/common/http';
 import { Empleado, Telefono, ReferenciaFamiliar, Curso } from '../../interfaces/empleado.interface';
 
 @Component({
@@ -22,11 +23,13 @@ export class PerfilEmpleadoComponent implements OnInit, OnDestroy {
   formularioCurso!: FormGroup;
   
   private loadingTimeout: any;
+  
 
   constructor(
     private authService: AuthService,
     private empleadoService: EmpleadoService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private http: HttpClient 
   ) { }
 
   ngOnInit(): void {
@@ -133,16 +136,54 @@ export class PerfilEmpleadoComponent implements OnInit, OnDestroy {
   inicializarFormularioEdicion(): void {
     if (!this.empleado) return;
     
+    // Extraer componentes de la dirección
+    const direccionCompleta = this.empleado.direccion || '';
+    let calle = '', numeroExterior = '', numeroInterior = '', colonia = '', codigoPostal = '';
+    
+    // Intentar parsear la dirección si está en el formato esperado
+    if (direccionCompleta.includes(',')) {
+      const partes = direccionCompleta.split(',').map(part => part.trim());
+      calle = partes[0] || '';
+      
+      // Extraer número exterior e interior
+      if (partes.length > 1) {
+        const numeroParte = partes[1];
+        if (numeroParte.includes('Int.')) {
+          const numPartes = numeroParte.split('Int.');
+          numeroExterior = numPartes[0].replace('S/N', '').trim();
+          numeroInterior = numPartes[1].trim();
+        } else {
+          numeroExterior = numeroParte.replace('S/N', '').trim();
+        }
+      }
+      
+      // Extraer colonia y código postal
+      if (partes.length > 2) {
+        colonia = partes[2] || '';
+      }
+      
+      if (partes.length > 3) {
+        codigoPostal = partes[3] || '';
+      }
+    } else {
+      // Si no está en el formato esperado, usar la dirección completa como calle
+      calle = direccionCompleta;
+    }
+    
     this.formularioEdicion = this.fb.group({
-      // Datos personales que se pueden editar
-      direccion: [this.empleado.direccion, Validators.required],
+      // Datos de dirección separados
+      calle: [calle, Validators.required],
+      numeroExterior: [numeroExterior],
+      numeroInterior: [numeroInterior],
+      colonia: [colonia, Validators.required],
+      codigoPostal: [codigoPostal, Validators.required],
+      
+      // Otros campos
       ciudad: [this.empleado.ciudad, Validators.required],
       email: [this.empleado.email, [Validators.required, Validators.email]],
       
-      // Teléfonos (como FormArray)
+      // Teléfonos y referencias familiares
       telefonos: this.fb.array([]),
-      
-      // Referencias familiares (como FormArray)
       referenciasFamiliares: this.fb.array([])
     });
     
@@ -228,33 +269,52 @@ export class PerfilEmpleadoComponent implements OnInit, OnDestroy {
 
   guardarCambios(): void {
     if (this.formularioEdicion.invalid) {
+      // Marcar todos los campos como tocados
       Object.keys(this.formularioEdicion.controls).forEach(key => {
         const control = this.formularioEdicion.get(key);
-        control?.markAsTouched();
-        
-        // Si es un FormArray, marcar todos sus controles
         if (control instanceof FormArray) {
-          control.controls.forEach(c => {
-            if (c instanceof FormGroup) {
-              Object.keys(c.controls).forEach(k => c.get(k)?.markAsTouched());
+          const formArray = control as FormArray;
+          formArray.controls.forEach(ctrl => {
+            if (ctrl instanceof FormGroup) {
+              Object.keys(ctrl.controls).forEach(subKey => {
+                ctrl.get(subKey)?.markAsTouched();
+              });
             } else {
-              c.markAsTouched();
+              ctrl.markAsTouched();
             }
           });
+        } else {
+          control?.markAsTouched();
         }
       });
       return;
     }
-
+  
     this.guardando = true;
     this.error = '';
     this.exito = '';
-
-    const datosActualizados = {
-      ...this.formularioEdicion.value
-    };
-
-    this.empleadoService.actualizarEmpleado(this.empleadoId, datosActualizados).subscribe({
+  
+    // Construir dirección completa
+    const calle = this.formularioEdicion.get('calle')?.value || '';
+    const numeroExterior = this.formularioEdicion.get('numeroExterior')?.value || 'S/N';
+    const numeroInterior = this.formularioEdicion.get('numeroInterior')?.value;
+    const colonia = this.formularioEdicion.get('colonia')?.value || '';
+    const codigoPostal = this.formularioEdicion.get('codigoPostal')?.value || '';
+    
+    const direccionCompleta = `${calle}, ${numeroExterior}${numeroInterior ? ' Int. ' + numeroInterior : ''}, ${colonia}, ${codigoPostal}`;
+    
+    // Crear un objeto FormData para el envío de datos
+    const formData = new FormData();
+    
+    // Agregar campos
+    formData.append('direccion', direccionCompleta);
+    formData.append('ciudad', this.formularioEdicion.get('ciudad')?.value);
+    formData.append('email', this.formularioEdicion.get('email')?.value);
+    formData.append('telefonos', JSON.stringify(this.telefonosArray.value));
+    formData.append('referenciasFamiliares', JSON.stringify(this.referenciasFamiliaresArray.value));
+  
+    // Enviar actualización
+    this.empleadoService.actualizarEmpleado(this.empleadoId, formData).subscribe({
       next: (response) => {
         if (response.success) {
           this.empleado = response.data;
@@ -266,11 +326,13 @@ export class PerfilEmpleadoComponent implements OnInit, OnDestroy {
         this.guardando = false;
       },
       error: (err) => {
-        this.error = `Error al actualizar: ${err.error?.message || 'Error de conexión'}`;
+        console.error('Error completo:', err);
+        this.error = `Error al actualizar: ${err.error?.message || err.statusText || 'Error de conexión'}`;
         this.guardando = false;
       }
     });
   }
+
 
   // Gestión de cursos
   toggleFormularioCurso(): void {
@@ -316,8 +378,16 @@ export class PerfilEmpleadoComponent implements OnInit, OnDestroy {
     return this.formularioEdicion.get('email')?.invalid && this.formularioEdicion.get('email')?.touched;
   }
   
-  get direccionNoValida() {
-    return this.formularioEdicion.get('direccion')?.invalid && this.formularioEdicion.get('direccion')?.touched;
+  get calleNoValida() {
+    return this.formularioEdicion.get('calle')?.invalid && this.formularioEdicion.get('calle')?.touched;
+  }
+  
+  get coloniaNoValida() {
+    return this.formularioEdicion.get('colonia')?.invalid && this.formularioEdicion.get('colonia')?.touched;
+  }
+  
+  get codigoPostalNoValido() {
+    return this.formularioEdicion.get('codigoPostal')?.invalid && this.formularioEdicion.get('codigoPostal')?.touched;
   }
   
   get ciudadNoValida() {

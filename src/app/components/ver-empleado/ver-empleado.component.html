@@ -1,4 +1,5 @@
 <div class="container">
+    <!-- Spinner de carga -->
     <div *ngIf="cargando" class="text-center my-5">
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Cargando...</span>
@@ -6,119 +7,178 @@
       <p class="mt-2">Cargando información del empleado...</p>
     </div>
   
+    <!-- Mensaje de error -->
     <div *ngIf="error" class="alert alert-danger">
       {{ error }}
     </div>
   
+    <!-- Mensaje de éxito -->
+    <div *ngIf="exito" class="alert alert-success">
+      {{ exito }}
+    </div>
+  
+    <!-- Contenido principal (solo se muestra si no hay error y no está cargando) -->
     <div *ngIf="!cargando && !error && empleado">
+      <!-- Cabecera con título y botones -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Detalles del Empleado</h2>
         <div>
-          <button class="btn btn-primary me-2" [routerLink]="['/empleados/editar', empleado._id]">Editar</button>
+          <button *ngIf="canEdit" class="btn btn-primary me-2" [routerLink]="['/empleados/editar', empleado._id]">Editar</button>
           <button class="btn btn-secondary" routerLink="/empleados">Volver</button>
         </div>
       </div>
   
-      <!-- Información General -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5>Información General</h5>
-        </div>
-        <div class="card-body">
+      <!-- Sección de Información General -->
+      <div class="seccion-contenedor">
+        <div class="seccion-header">Información General</div>
+        <div class="seccion-contenido">
           <div class="row">
-            <div class="col-md-4 text-center mb-3">
-              <!-- Foto del empleado -->
+            <!-- Columna con foto y nombre -->
+            <div class="col-md-4 text-center">
               <img 
                 [src]="empleado.foto && empleado.foto !== 'uploads/empleados/default.jpg' 
                      ? 'http://localhost:3000/' + empleado.foto 
                      : 'assets/img/default-profile.jpg'"
-                alt="Foto del empleado"
-                class="img-fluid rounded"
-                style="max-height: 200px; max-width: 100%;">
-            </div>
-            <div class="col-md-8">
-              <h4>{{ empleado.nombre }} {{ empleado.apellidoPaterno }} {{ empleado.apellidoMaterno }}</h4>
-              <span class="badge"
+                alt="Foto de {{ empleado.nombre }}"
+                class="imagen-empleado">
+              <h3 class="nombre-empleado">{{ empleado.nombre }} {{ empleado.apellidoPaterno }} {{ empleado.apellidoMaterno }}</h3>
+              <span class="estado" 
                     [ngClass]="{
-                       'bg-success': empleado.estado === 'Activo',
-                       'bg-warning': empleado.estado === 'BajaTemporal',
-                       'bg-danger': empleado.estado === 'BajaDefinitiva'
+                       'estado-activo': empleado.estado === 'Activo',
+                       'estado-baja-temporal': empleado.estado === 'BajaTemporal',
+                       'estado-baja-definitiva': empleado.estado === 'BajaDefinitiva'
                      }">
                 {{ empleado.estado }}
               </span>
-              
-              <ul class="list-group list-group-flush mt-3">
-                <li class="list-group-item"><strong>Clave:</strong> {{ empleado.clave }}</li>
-                <li class="list-group-item"><strong>RFC:</strong> {{ empleado.rfc }}</li>
-                <li class="list-group-item"><strong>Puesto:</strong> {{ empleado.puesto }}</li>
-                <li class="list-group-item"><strong>Departamento:</strong> {{ empleado.departamento }}</li>
-                <li class="list-group-item"><strong>Fecha de Ingreso:</strong> {{ empleado.fechaIngreso | date }}</li>
+            </div>
+            
+            <!-- Columna con información laboral -->
+            <div class="col-md-8">
+              <ul class="info-lista">
+                <li class="info-item">
+                  <span class="info-label">Clave:</span>
+                  <span class="info-valor">{{ empleado.clave }}</span>
+                </li>
+                <li class="info-item">
+                  <span class="info-label">RFC:</span>
+                  <span class="info-valor">{{ empleado.rfc }}</span>
+                </li>
+                <li class="info-item">
+                  <span class="info-label">Puesto:</span>
+                  <span class="info-valor">{{ empleado.puesto }}</span>
+                </li>
+                <li class="info-item">
+                  <span class="info-label">Departamento:</span>
+                  <span class="info-valor">{{ empleado.departamento }}</span>
+                </li>
+                <li class="info-item">
+                  <span class="info-label">Fecha de Ingreso:</span>
+                  <span class="info-valor">{{ empleado.fechaIngreso | date }}</span>
+                </li>
               </ul>
             </div>
           </div>
         </div>
       </div>
   
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5>Datos Personales</h5>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <p><strong>Fecha de Nacimiento:</strong> {{ empleado.fechaNacimiento | date }}</p>
-              <p><strong>Sexo:</strong> {{ empleado.sexo || 'No especificado' }}</p>
-              <p><strong>Dirección:</strong> {{ empleado.direccion }}</p>
-              <p><strong>Ciudad:</strong> {{ empleado.ciudad }}</p>
+      <!-- Sección de Datos Personales -->
+      <div class="seccion-contenedor">
+        <div class="seccion-header">Datos Personales</div>
+        <div class="seccion-contenido">
+          <div class="datos-personales">
+            <div class="datos-item">
+              <span class="datos-label">Fecha de Nacimiento:</span>
+              <span class="datos-valor">{{ empleado.fechaNacimiento | date }}</span>
             </div>
-            <div class="col-md-6">
-              <p *ngIf="empleado.telefonos && empleado.telefonos.length > 0"><strong>Teléfonos:</strong>
+            <div class="datos-item">
+              <span class="datos-label">Sexo:</span>
+              <span class="datos-valor">{{ empleado.sexo || 'No especificado' }}</span>
+            </div>
+            <div class="datos-item">
+              <span class="datos-label">Email:</span>
+              <span class="datos-valor">{{ empleado.email }}</span>
+            </div>
+            <div class="datos-item">
+              <span class="datos-label">Ciudad:</span>
+              <span class="datos-valor">{{ empleado.ciudad }}</span>
+            </div>
+            <div class="datos-item" *ngIf="empleado.telefonos && empleado.telefonos.length > 0">
+              <span class="datos-label">Teléfonos:</span>
+              <span class="datos-valor">
                 <span *ngFor="let tel of empleado.telefonos; let last = last">
                   {{ tel.numero }}{{ !last ? ', ' : '' }}
                 </span>
-              </p>
-              <p *ngIf="!empleado.telefonos || empleado.telefonos.length === 0">
-                <strong>Teléfono:</strong> {{ empleado.telefono || 'No especificado' }}
-              </p>
-              <p><strong>Email:</strong> {{ empleado.email }}</p>
+              </span>
+            </div>
+            <div class="datos-item" *ngIf="!empleado.telefonos || empleado.telefonos.length === 0">
+              <span class="datos-label">Teléfono:</span>
+              <span class="datos-valor">{{ empleado.telefono || 'No especificado' }}</span>
+            </div>
+            <div class="datos-item">
+              <span class="datos-label">Dirección:</span>
+              <span class="datos-valor">{{ empleado.direccion }}</span>
             </div>
           </div>
         </div>
       </div>
   
-      <!-- Historial de Bajas -->
-      <div class="card mb-4" *ngIf="empleado.bajas && empleado.bajas.length > 0">
-        <div class="card-header">
-          <h5>Historial de Bajas</h5>
+      <!-- Sección de Actividades -->
+      <div class="seccion-contenedor">
+        <div class="seccion-header acciones-header">
+          <h3>Actividades</h3>
+          <div class="acciones-botones" *ngIf="canEdit">
+            <button class="btn btn-sm btn-primary" [routerLink]="['/empleados', empleado._id, 'actividades', 'nuevo']">
+              Registrar Actividad
+            </button>
+          </div>
         </div>
-        <div class="card-body">
-          <table class="table">
+        <div class="seccion-contenido">
+          <div *ngIf="!empleado.actividades || empleado.actividades.length === 0" class="empty-message">
+            No hay actividades registradas para este empleado.
+          </div>
+          <table *ngIf="empleado.actividades && empleado.actividades.length > 0" class="tabla-actividades">
             <thead>
               <tr>
+                <th>Nombre</th>
                 <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Motivo</th>
-                <th>Fecha de Retorno</th>
+                <th>Participación</th>
+                <th *ngIf="canEdit">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let baja of empleado.bajas">
-                <td>{{ baja.fecha | date }}</td>
-                <td>{{ baja.tipo }}</td>
-                <td>{{ baja.motivo }}</td>
-                <td>{{ baja.fechaRetorno | date }}</td>
+              <tr *ngFor="let actividad of empleado.actividades | slice:0:3">
+                <td>{{ actividad.nombre }}</td>
+                <td>{{ actividad.fecha | date }}</td>
+                <td>
+                  <span class="badge" 
+                        [ngClass]="actividad.participo ? 'badge-success' : 'badge-danger'">
+                    {{ actividad.participo ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+                <td *ngIf="canEdit">
+                  <button class="btn btn-sm"
+                          [ngClass]="actividad.participo ? 'btn-outline-danger' : 'btn-outline-success'"
+                          (click)="cambiarParticipacion(actividad)">
+                    {{ actividad.participo ? 'No Participó' : 'Si Participó' }}
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
+          <div *ngIf="empleado.actividades && empleado.actividades.length > 3" class="text-end mt-3">
+            <a [routerLink]="['/empleados', empleado._id, 'actividades']">
+              Ver todas las actividades ({{ empleado.actividades.length }})
+            </a>
+          </div>
         </div>
       </div>
   
-      <!-- Cursos -->
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5>Cursos</h5>
-          <div>
-            <button class="btn btn-sm btn-primary me-2" [routerLink]="['/empleados', empleado._id, 'cursos', 'nuevo']">
+      <!-- Sección de Cursos -->
+      <div class="seccion-contenedor">
+        <div class="seccion-header acciones-header">
+          <h3>Cursos</h3>
+          <div class="acciones-botones" *ngIf="canEdit">
+            <button class="btn btn-sm btn-primary" [routerLink]="['/empleados', empleado._id, 'cursos', 'nuevo']">
               Agregar Curso
             </button>
             <button class="btn btn-sm btn-secondary" [routerLink]="['/empleados', empleado._id, 'cursos']">
@@ -126,11 +186,11 @@
             </button>
           </div>
         </div>
-        <div class="card-body">
-          <div *ngIf="!empleado.cursos || empleado.cursos.length === 0" class="alert alert-info">
+        <div class="seccion-contenido">
+          <div *ngIf="!empleado.cursos || empleado.cursos.length === 0" class="empty-message">
             No hay cursos registrados para este empleado.
           </div>
-          <table class="table" *ngIf="empleado.cursos && empleado.cursos.length > 0">
+          <table *ngIf="empleado.cursos && empleado.cursos.length > 0" class="tabla-cursos">
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -148,63 +208,21 @@
               </tr>
             </tbody>
           </table>
-          <div *ngIf="empleado.cursos && empleado.cursos.length > 3" class="text-end mt-2">
-            <a [routerLink]="['/empleados', empleado._id, 'cursos']">Ver todos los cursos ({{ empleado.cursos.length }})</a>
+          <div *ngIf="empleado.cursos && empleado.cursos.length > 3" class="text-end mt-3">
+            <a [routerLink]="['/empleados', empleado._id, 'cursos']">
+              Ver todos los cursos ({{ empleado.cursos.length }})
+            </a>
           </div>
         </div>
       </div>
   
-      <!-- Actividades -->
-      <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5>Actividades</h5>
-          <div>
-            <button class="btn btn-sm btn-primary me-2" [routerLink]="['/empleados', empleado._id, 'actividades', 'nuevo']">
-              Registrar Actividad
-            </button>
-            <button class="btn btn-sm btn-secondary" [routerLink]="['/empleados', empleado._id, 'actividades']">
-              Ver Todas
-            </button>
-          </div>
+      <!-- Sección de Referencias Familiares -->
+      <div *ngIf="empleado.referenciasFamiliares && empleado.referenciasFamiliares.length > 0" class="seccion-contenedor">
+        <div class="seccion-header acciones-header">
+          <h3>Referencias Familiares</h3>
+          <button *ngIf="canEdit" class="btn btn-sm btn-primary">Agregar Referencia</button>
         </div>
-        <div class="card-body">
-          <div *ngIf="!empleado.actividades || empleado.actividades.length === 0" class="alert alert-info">
-            No hay actividades registradas para este empleado.
-          </div>
-          <table class="table" *ngIf="empleado.actividades && empleado.actividades.length > 0">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Fecha</th>
-                <th>Participación</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let actividad of empleado.actividades | slice:0:3">
-                <td>{{ actividad.nombre }}</td>
-                <td>{{ actividad.fecha | date }}</td>
-                <td>
-                  <span class="badge" 
-                        [ngClass]="actividad.participo || actividad.participacion ? 'bg-success' : 'bg-danger'">
-                    {{ actividad.participo || actividad.participacion ? 'Sí' : 'No' }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="empleado.actividades && empleado.actividades.length > 3" class="text-end mt-2">
-            <a [routerLink]="['/empleados', empleado._id, 'actividades']">Ver todas las actividades ({{ empleado.actividades.length }})</a>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Referencias Familiares -->
-      <div class="card mb-4" *ngIf="empleado.referenciasFamiliares && empleado.referenciasFamiliares.length > 0">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5>Referencias Familiares</h5>
-          <button class="btn btn-sm btn-primary">Agregar Referencia</button>
-        </div>
-        <div class="card-body">
+        <div class="seccion-contenido">
           <div class="row">
             <div class="col-md-6 mb-3" *ngFor="let referencia of empleado.referenciasFamiliares">
               <div class="card h-100">
@@ -220,23 +238,104 @@
         </div>
       </div>
   
-      <!-- Opciones adicionales -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5>Opciones</h5>
+    <!-- Sección de Opciones -->
+<div class="seccion-contenedor" *ngIf="canEdit">
+    <div class="seccion-header">Opciones</div>
+    <div class="seccion-contenido">
+      <div class="opciones-botones">
+        <button class="btn-opcion btn-warning" *ngIf="empleado.estado === 'Activo'" (click)="registrarBaja()">
+          <i class="bi bi-person-dash-fill"></i>
+          Registrar Baja
+        </button>
+        <button class="btn-opcion btn-success" *ngIf="empleado.estado === 'BajaTemporal'" (click)="registrarReingreso()">
+          <i class="bi bi-person-plus-fill"></i>
+          Registrar Reingreso
+        </button>
+        <button class="btn-opcion btn-danger" (click)="eliminarEmpleado()">
+          <i class="bi bi-trash-fill"></i>
+          Eliminar Empleado
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modales (agregar estos al final de tu template, antes del cierre del div container) -->
+  <!-- Modal para Registrar Baja -->
+  <div class="modal fade" id="modalBaja" tabindex="-1" aria-labelledby="modalBajaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalBajaLabel">Registrar Baja</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="card-body">
-          <div class="d-flex gap-2">
-            <button class="btn btn-warning" *ngIf="empleado.estado === 'Activo'">
-              Registrar Baja
-            </button>
-            <button class="btn btn-success" *ngIf="empleado.estado === 'BajaTemporal'">
-              Registrar Reingreso
-            </button>
-            <button class="btn btn-danger" (click)="eliminarEmpleado()">
-              Eliminar Empleado
-            </button>
-          </div>
+        <div class="modal-body">
+          <form [formGroup]="bajaForm">
+            <div class="mb-3">
+              <label class="form-label">Tipo de Baja</label>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" formControlName="tipo" id="bajaTemporal" value="Temporal">
+                <label class="form-check-label" for="bajaTemporal">Baja Temporal</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" formControlName="tipo" id="bajaDefinitiva" value="Definitiva">
+                <label class="form-check-label" for="bajaDefinitiva">Baja Definitiva</label>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="fecha" class="form-label">Fecha de Baja</label>
+              <input type="date" id="fecha" class="form-control" formControlName="fecha">
+            </div>
+            
+            <div *ngIf="bajaForm.get('tipo')?.value === 'Temporal'" class="mb-3">
+              <label for="fechaRetorno" class="form-label">Fecha Estimada de Retorno</label>
+              <input type="date" id="fechaRetorno" class="form-control" formControlName="fechaRetorno">
+            </div>
+            
+            <div class="mb-3">
+              <label for="motivo" class="form-label">Motivo de la Baja</label>
+              <textarea id="motivo" class="form-control" formControlName="motivo" rows="3"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" [disabled]="bajaForm.invalid || procesando" (click)="guardarBaja()">
+            <span *ngIf="procesando" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Registrar Baja
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para Registrar Reingreso -->
+  <div class="modal fade" id="modalReingreso" tabindex="-1" aria-labelledby="modalReingresoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalReingresoLabel">Registrar Reingreso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="reingresoForm">
+            <div class="mb-3">
+              <label for="fechaReingreso" class="form-label">Fecha de Reingreso</label>
+              <input type="date" id="fechaReingreso" class="form-control" formControlName="fecha">
+            </div>
+            
+            <div class="mb-3">
+              <label for="motivoReingreso" class="form-label">Observaciones</label>
+              <textarea id="motivoReingreso" class="form-control" formControlName="motivo" rows="3"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" [disabled]="reingresoForm.invalid || procesando" (click)="guardarReingreso()">
+            <span *ngIf="procesando" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Registrar Reingreso
+          </button>
         </div>
       </div>
     </div>

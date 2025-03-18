@@ -1,9 +1,8 @@
 const empleadoService = require('../services/empleadoService');
 const User = require('../models/User');
 const Empleado = require('../models/Empleado');
-const bcrypt = require('bcryptjs');
-const emailService = require('../services/emailService');
 
+// Crear un nuevo empleado
 exports.crearEmpleado = async (req, res) => {
   try {
     const fotoPath = req.file ? req.file.path : null;
@@ -30,6 +29,7 @@ exports.crearEmpleado = async (req, res) => {
   }
 };
 
+// Obtener todos los empleados con filtros
 exports.obtenerEmpleados = async (req, res) => {
   try {
     const empleados = await empleadoService.obtenerEmpleados(req.query);
@@ -39,6 +39,7 @@ exports.obtenerEmpleados = async (req, res) => {
   }
 };
 
+// Obtener un empleado por su ID
 exports.obtenerEmpleadoPorId = async (req, res) => {
   try {
     const empleado = await empleadoService.obtenerEmpleadoPorId(req.params.id);
@@ -49,6 +50,7 @@ exports.obtenerEmpleadoPorId = async (req, res) => {
   }
 };
 
+// Actualizar datos de un empleado
 exports.actualizarEmpleado = async (req, res) => {
   try {
     const empleado = await empleadoService.obtenerEmpleadoPorId(req.params.id);
@@ -69,6 +71,7 @@ exports.actualizarEmpleado = async (req, res) => {
   }
 };
 
+// Eliminar un empleado
 exports.eliminarEmpleado = async (req, res) => {
   try {
     const resultado = await empleadoService.eliminarEmpleado(req.params.id);
@@ -79,6 +82,7 @@ exports.eliminarEmpleado = async (req, res) => {
   }
 };
 
+// Cambiar el estado de un empleado (activo, baja temporal, baja definitiva)
 exports.cambiarEstado = async (req, res) => {
   try {
     const { tipo, fecha, motivo } = req.body;
@@ -93,6 +97,7 @@ exports.cambiarEstado = async (req, res) => {
   }
 };
 
+// Obtener el perfil del empleado autenticado
 exports.obtenerPerfil = async (req, res) => {
   try {
     const usuario = await User.findById(req.user.id);
@@ -107,67 +112,9 @@ exports.obtenerPerfil = async (req, res) => {
   }
 };
 
-exports.crearUsuario = async (req, res) => {
-  const { empleadoId, username, password, rol } = req.body;
-  
-  try {
-    if (!['recursosHumanos', 'empleado'].includes(rol)) 
-      return res.status(400).json({ message: 'Rol no válido' });
-    
-    const empleado = await Empleado.findById(empleadoId);
-    if (!empleado) 
-      return res.status(404).json({ message: 'Empleado no encontrado' });
-    
-    // Verificar si ya existe un usuario para este empleado
-    const usuarioExistente = await User.findOne({ empleado: empleadoId });
-    if (usuarioExistente) 
-      return res.status(400).json({ message: 'Ya existe un usuario para este empleado' });
-    
-    // Verificar si el nombre de usuario ya está en uso
-    const usernameExistente = await User.findOne({ username });
-    if (usernameExistente)
-      return res.status(400).json({ message: 'Ese nombre de usuario ya está en uso' });
-    
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    
-    const newUser = new User({
-      username,
-      password: hashedPassword,
-      rol,
-      empleado: empleadoId,
-      requiereCambioPassword: true
-    });
-    
-    await newUser.save();
-
-    try {
-      const nombreCompleto = `${empleado.nombre} ${empleado.apellidoPaterno} ${empleado.apellidoMaterno}`;
-      const emailEnviado = await emailService.enviarCredencialesPorEmail(nombreCompleto, empleado.email, username, password);
-      
-      res.status(201).json({
-        message: 'Usuario creado con éxito',
-        emailEnviado,
-        user: { username: newUser.username, rol: newUser.rol, empleado: newUser.empleado }
-      });
-    } catch (emailError) {
-      console.error('Error al enviar email:', emailError);
-      res.status(201).json({
-        message: 'Usuario creado con éxito, pero no se pudieron enviar las credenciales por email',
-        emailEnviado: false,
-        error: emailError.message,
-        user: { username: newUser.username, rol: newUser.rol, empleado: newUser.empleado }
-      });
-    }
-  } catch (err) {
-    console.error('Error al crear usuario:', err);
-    res.status(500).json({ message: 'Error del servidor', error: err.message });
-  }
-};
-
+// Actualizar el perfil propio del empleado
 exports.actualizarMiPerfil = async (req, res) => {
   try {
-    // Obtener el ID del empleado desde el token de autenticación
     const usuario = await User.findById(req.user.id);
     if (!usuario || !usuario.empleado) {
       return res.status(404).json({ success: false, message: 'No se encontró el perfil asociado' });
@@ -175,14 +122,12 @@ exports.actualizarMiPerfil = async (req, res) => {
     
     const empleadoId = usuario.empleado;
     
-    // Procesar los datos recibidos
     const datosProcesados = {
       direccion: req.body.direccion,
       ciudad: req.body.ciudad,
       email: req.body.email
     };
     
-    // Procesar teléfonos y referencias familiares
     ['telefonos', 'referenciasFamiliares'].forEach(campo => {
       if (req.body[campo]) {
         try { 
@@ -195,10 +140,7 @@ exports.actualizarMiPerfil = async (req, res) => {
       }
     });
     
-    // Si hay una foto, procesarla
     const fotoPath = req.file ? req.file.path : null;
-    
-    // Actualizar el empleado
     const empleadoActualizado = await empleadoService.actualizarEmpleado(empleadoId, datosProcesados, fotoPath);
     
     res.status(200).json({ success: true, data: empleadoActualizado });

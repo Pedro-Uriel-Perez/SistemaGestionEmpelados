@@ -1,4 +1,3 @@
-// services/empleado.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -14,12 +13,8 @@ export class EmpleadoService {
   
   getEmpleados(filtros?: any): Observable<{success: boolean, count: number, data: Empleado[]}> {
     let params = new HttpParams();
-    
     if (filtros) {
-      Object.keys(filtros).forEach(key => {
-        if (filtros[key]) {
-          params = params.append(key, filtros[key]);
-        }
+      Object.keys(filtros).forEach(key => {if (filtros[key]) {params = params.append(key, filtros[key]);}
       });
     }
     
@@ -73,7 +68,7 @@ export class EmpleadoService {
   
   // Métodos para actividades
   getActividades(empleadoId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${empleadoId}/actividades`);
+    return this.http.get(`http://localhost:3000/api/actividades/empleado/${empleadoId}`);
   }
 
   getActividad(empleadoId: string, actividadId: string): Observable<any> {
@@ -85,10 +80,14 @@ export class EmpleadoService {
   }
 
   actualizarActividad(empleadoId: string, actividadId: string, actividadData: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${empleadoId}/actividades/${actividadId}`, actividadData);
+    return this.http.put(`http://localhost:3000/api/actividades/participacion/${empleadoId}/${actividadId}`, actividadData);
   }
 
   eliminarActividad(empleadoId: string, actividadId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${empleadoId}/actividades/${actividadId}`);
   }
+  // En empleado.service.ts
+actualizarMiPerfil(datos: FormData): Observable<{success: boolean, data: Empleado}> {
+  return this.http.put<{success: boolean, data: Empleado}>(`${this.apiUrl}/perfil`, datos);
+}
 }

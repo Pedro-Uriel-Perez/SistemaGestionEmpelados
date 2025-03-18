@@ -1,6 +1,7 @@
+// components/actividades/lista-actividades/lista-actividades.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { EmpleadoService } from '../../../services/empleado.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActividadService } from '../../../services/actividades.service';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
@@ -9,48 +10,40 @@ import { AuthService } from '../../../services/auth.service';
   styleUrls: ['./lista-actividades.component.css']
 })
 export class ListaActividadesComponent implements OnInit {
-  empleadoId: string = '';
   actividades: any[] = [];
-  empleado: any = null;
   loading: boolean = true;
   error: string = '';
-  canEdit: boolean = false;
+  esRecursosHumanos: boolean = false;
+  mostrarFormulario: boolean = false;
+  actividadForm: FormGroup;
 
   constructor(
-    private route: ActivatedRoute,
-    private empleadoService: EmpleadoService,
-    private authService: AuthService
-  ) { }
-
-  ngOnInit(): void {
-    this.empleadoId = this.route.snapshot.params['id'];
-    this.loadEmpleadoInfo();
-    this.loadActividades();
-    
-    // Solo RH puede editar actividades
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      this.canEdit = currentUser.rol === 'recursosHumanos' || currentUser.rol === 'admin';
-    }
-  }
-
-  loadEmpleadoInfo(): void {
-    this.empleadoService.getEmpleadoPorId(this.empleadoId).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.empleado = response.data;
-        }
-      },
-      error: (err) => {
-        this.error = 'Error al cargar información del empleado';
-        console.error(err);
-      }
+    private actividadService: ActividadService,
+    private authService: AuthService,
+    private fb: FormBuilder
+  ) {
+    this.actividadForm = this.fb.group({
+      nombre: ['', Validators.required],
+      fecha: ['', Validators.required],
+      descripcion: ['']
     });
   }
 
-  loadActividades(): void {
+  ngOnInit(): void {
+    this.checkUserRole();
+    this.cargarActividades();
+  }
+
+  checkUserRole(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.esRecursosHumanos = currentUser.rol === 'recursosHumanos';
+    }
+  }
+
+  cargarActividades(): void {
     this.loading = true;
-    this.empleadoService.getActividades(this.empleadoId).subscribe({
+    this.actividadService.getTodasActividades().subscribe({
       next: (response) => {
         if (response.success) {
           this.actividades = response.data;
@@ -65,19 +58,28 @@ export class ListaActividadesComponent implements OnInit {
     });
   }
 
-  eliminarActividad(actividadId: string): void {
-    if (confirm('¿Está seguro de eliminar esta actividad?')) {
-      this.empleadoService.eliminarActividad(this.empleadoId, actividadId).subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.loadActividades(); // Recargar la lista
-          }
-        },
-        error: (err) => {
-          this.error = 'Error al eliminar la actividad';
-          console.error(err);
-        }
-      });
+  toggleFormulario(): void {
+    this.mostrarFormulario = !this.mostrarFormulario;
+    if (this.mostrarFormulario) {
+      this.actividadForm.reset();
     }
+  }
+
+  guardarActividad(): void {
+    if (this.actividadForm.invalid) return;
+
+    const actividad = this.actividadForm.value;
+    this.actividadService.crearActividad(actividad).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.mostrarFormulario = false;
+          this.cargarActividades();
+        }
+      },
+      error: (err) => {
+        this.error = 'Error al crear la actividad';
+        console.error(err);
+      }
+    });
   }
 }

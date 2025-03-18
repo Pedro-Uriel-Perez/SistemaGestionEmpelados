@@ -1,4 +1,3 @@
-// services/catalogo.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,38 +6,25 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class CatalogoService {
-  private apiUrl = 'http://localhost:3000/api/catalogos';
+  private apiUrl = 'http://localhost:3000/api/departamentos';
+
 
   constructor(private http: HttpClient) { }
 
   // Obtener todos los departamentos
   getDepartamentos(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/departamentos`);
+    return this.http.get<any>(this.apiUrl);
   }
-
-  // Obtener todos los puestos
-  getPuestos(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/puestos`);
-  }
-
-  // Obtener todas las ciudades
-  getCiudades(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/ciudades`);
-  }
-
-
   // Obtener un departamento por ID
-  getDepartamentoById(id: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/departamentos/${id}`);
+  getDepartamento(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
-
-  // Obtener un puesto por ID
-  getPuestoById(id: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/puestos/${id}`);
+  // Obtener puestos de un departamento
+  getPuestosPorDepartamento(departamentoId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${departamentoId}/puestos`);
   }
-
-  // Obtener una ciudad por ID
-  getCiudadById(id: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/ciudades/${id}`);
+  // Obtener todos los puestos
+  getTodosLosPuestos(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/puestos/todos`);
   }
 }

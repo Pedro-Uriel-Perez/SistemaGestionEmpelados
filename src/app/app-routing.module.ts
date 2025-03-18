@@ -26,7 +26,7 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   
   // Ruta específica para el perfil de empleado (solo rol "empleado")
-  { path: 'perfil', component: PerfilEmpleadoComponent,canActivate: [AuthGuard, RoleGuard],data: { roles: ['empleado'] }},
+  { path: 'perfil', component: PerfilEmpleadoComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['empleado'] }},
   
   // Rutas para RH)
   {
@@ -36,6 +36,11 @@ const routes: Routes = [
     data: { roles: ['admin', 'recursosHumanos'] },
     children: [
       { path: '', redirectTo: 'empleados', pathMatch: 'full' },
+      
+      // Nueva ruta para el catálogo de actividades
+      { path: 'actividades', component: ListaActividadesComponent },
+      
+      // Rutas de empleados
       { path: 'empleados', component: ListaEmpleadosComponent },
       { path: 'empleados/crear', component: CrearEmpleadoComponent },
       { path: 'empleados/editar/:id', component: EditarEmpleadoComponent },

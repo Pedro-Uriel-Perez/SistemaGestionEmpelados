@@ -88,6 +88,6 @@ const EmpleadoSchema = new mongoose.Schema({
     telefono: String,
     email: String
   }]
-}, { timestamps: true });
+});
 
-module.exports = mongoose.model('Empleado', EmpleadoSchema);
+module.exports = mongoose.model('Empleado', EmpleadoSchema, 'empleados');

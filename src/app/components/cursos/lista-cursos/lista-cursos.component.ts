@@ -72,7 +72,7 @@ export class ListaCursosComponent implements OnInit {
       this.empleadoService.eliminarCurso(this.empleadoId, cursoId).subscribe({
         next: (response) => {
           if (response.success) {
-            this.loadCursos(); // Recargar la lista
+            this.loadCursos();
           }
         },
         error: (err) => {

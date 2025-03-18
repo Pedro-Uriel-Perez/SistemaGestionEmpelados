@@ -6,15 +6,14 @@ exports.registrarCurso = async (req, res) => {
     const { empleadoId } = req.params;
     const { nombre, fechaInicio, fechaFin, tipoDocumento, observaciones } = req.body;
     
-    // Validaciones
-    if (!nombre || !fechaInicio || !fechaFin || !tipoDocumento) {
+    if (!nombre || !fechaInicio || !fechaFin) {
       return res.status(400).json({
         success: false,
-        message: 'Nombre, fechas y tipo de documento son requeridos'
+        message: 'Nombre y fechas son requeridos'
       });
     }
     
-    // Verificar permisos// Si es empleado regular, solo puede registrar cursos para sí mismo
+    // Verificar permisos
     if (req.user?.rol === 'empleado' && req.user?.empleado && req.user.empleado.toString() !== empleadoId) {
       return res.status(403).json({
         success: false,
@@ -26,7 +25,7 @@ exports.registrarCurso = async (req, res) => {
       nombre,
       fechaInicio,
       fechaFin,
-      tipoDocumento,
+      tipoDocumento: tipoDocumento || '',
       observaciones: observaciones || ''
     };
     
@@ -50,13 +49,6 @@ exports.registrarCurso = async (req, res) => {
 exports.obtenerCursos = async (req, res) => {
   try {
     const { empleadoId } = req.params;
-    
-    // Verificar permisos
-    if (req.user?.rol === 'empleado') {
-      // Si es rol empleado, permitir acceso sin verificación adicional
-      // Esto permite que todos los empleados vean todos los cursos por ahora
-    }
-    
     const cursos = await cursoService.obtenerCursos(empleadoId);
     
     res.status(200).json({
@@ -77,12 +69,6 @@ exports.obtenerCursos = async (req, res) => {
 exports.obtenerCurso = async (req, res) => {
   try {
     const { empleadoId, cursoId } = req.params;
-    
-    // Verificar permisos
-    if (req.user?.rol === 'empleado') {
-      // Si es rol empleado, permitir acceso sin verificación adicional
-    }
-    
     const curso = await cursoService.obtenerCursoPorId(empleadoId, cursoId);
     
     res.status(200).json({
@@ -109,24 +95,18 @@ exports.actualizarCurso = async (req, res) => {
     const { empleadoId, cursoId } = req.params;
     const { nombre, fechaInicio, fechaFin, tipoDocumento, observaciones } = req.body;
     
-    // Verificar campos requeridos
-    if (!nombre && !fechaInicio && !fechaFin && !tipoDocumento) {
+    if (!nombre && !fechaInicio && !fechaFin && !tipoDocumento && observaciones === undefined) {
       return res.status(400).json({
         success: false,
         message: 'Debe proporcionar al menos un campo para actualizar'
       });
     }
     
-    // Verificar permisos
-    if (req.user?.rol === 'empleado') {
-      // Si es rol empleado, permitir acceso sin verificación adicional
-    }
-    
     const cursoData = {};
     if (nombre) cursoData.nombre = nombre;
     if (fechaInicio) cursoData.fechaInicio = fechaInicio;
     if (fechaFin) cursoData.fechaFin = fechaFin;
-    if (tipoDocumento) cursoData.tipoDocumento = tipoDocumento;
+    if (tipoDocumento !== undefined) cursoData.tipoDocumento = tipoDocumento;
     if (observaciones !== undefined) cursoData.observaciones = observaciones;
     
     const cursoActualizado = await cursoService.actualizarCurso(empleadoId, cursoId, cursoData);

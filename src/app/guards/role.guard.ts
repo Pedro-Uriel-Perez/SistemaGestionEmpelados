@@ -15,14 +15,11 @@ export class RoleGuard implements CanActivate {
   
   canActivate(route: ActivatedRouteSnapshot): boolean {
     const requiredRoles = route.data['roles'] as Array<string>;
-    
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return false;
     }
-    
     const userRole = this.authService.getUserRole();
-    
     if (!requiredRoles.includes(userRole)) {
       if (userRole === 'empleado') {
         this.router.navigate(['/perfil']);
@@ -31,7 +28,6 @@ export class RoleGuard implements CanActivate {
       }
       return false;
     }
-    
     return true;
   }
 }

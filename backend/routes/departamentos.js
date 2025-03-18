@@ -3,9 +3,6 @@ const router = express.Router();
 const departamentoController = require('../controllers/departamentoController');
 const auth = require('../middleware/auth');
 
-// Ruta para inicializar datos
-router.get('/inicializar', departamentoController.inicializarDatos);
-
 // Ruta para obtener todos los departamentos
 router.get('/', departamentoController.obtenerDepartamentos);
 

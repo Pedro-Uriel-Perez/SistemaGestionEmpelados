@@ -1,4 +1,3 @@
-// components/empleados/editar-empleado/editar-empleado.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,8 +22,8 @@ export class EditarEmpleadoComponent implements OnInit {
   
   // Catálogos
   departamentos: any[] = [];
-  puestos: any[] = [];
-  ciudades: any[] = [];
+  puestos: string[] = [];
+  ciudades = ['Ciudad de México', 'Guadalajara', 'Monterrey', 'Puebla'];
   roles = ['empleado', 'recursosHumanos'];
   
   // Datos originales del empleado para comparar cambios
@@ -45,45 +44,34 @@ export class EditarEmpleadoComponent implements OnInit {
   }
 
   cargarCatalogos(): void {
-    // Si tienes endpoints para cargar los catálogos desde la BD, descomenta estas líneas
-    // y comenta las asignaciones directas de abajo
-    
-    /*
-    // Cargar departamentos
+    // Cargar departamentos desde el servicio
     this.catalogoService.getDepartamentos().subscribe({
       next: (response) => {
         if (response.success) {
+          console.log('Departamentos cargados:', response.data);
           this.departamentos = response.data;
         }
       },
       error: (err) => console.error('Error al cargar departamentos:', err)
     });
+  }
 
-    // Cargar puestos
-    this.catalogoService.getPuestos().subscribe({
+  cargarPuestosPorDepartamento(departamentoId: string): void {
+    if (!departamentoId) {
+      this.puestos = [];
+      return;
+    }
+    
+    this.catalogoService.getPuestosPorDepartamento(departamentoId).subscribe({
       next: (response) => {
         if (response.success) {
+          // Ahora los puestos son un array de strings
           this.puestos = response.data;
+          console.log('Puestos cargados:', this.puestos);
         }
       },
       error: (err) => console.error('Error al cargar puestos:', err)
     });
-
-    // Cargar ciudades
-    this.catalogoService.getCiudades().subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.ciudades = response.data;
-        }
-      },
-      error: (err) => console.error('Error al cargar ciudades:', err)
-    });
-    */
-    
-    // Asignación directa como respaldo
-    this.departamentos = ['Ventas', 'Recursos Humanos', 'Administración', 'TI'];
-    this.puestos = ['Gerente', 'Supervisor', 'Analista', 'Asistente'];
-    this.ciudades = ['Ciudad de México', 'Guadalajara', 'Monterrey', 'Puebla'];
   }
 
   crearFormulario(): void {
@@ -120,6 +108,31 @@ export class EditarEmpleadoComponent implements OnInit {
       // Datos de usuario
       rol: ['empleado']
     });
+    
+    // Escuchar cambios en el departamento seleccionado
+    this.empleadoForm.get('departamento')?.valueChanges.subscribe(
+      (departamentoId) => {
+        if (departamentoId) {
+          this.cargarPuestosPorDepartamento(departamentoId);
+          this.asignarRolSegunDepartamento(departamentoId);
+        } else {
+          this.puestos = [];
+        }
+      }
+    );
+  }
+  asignarRolSegunDepartamento(departamentoId: string): void {
+    // Buscar el departamento seleccionado
+    const departamento = this.departamentos.find(d => d._id === departamentoId);
+    
+    // Asignar rol automáticamente según el departamento
+    if (departamento && departamento.esRecursosHumanos) {
+      console.log('Asignando rol de recursosHumanos porque el departamento es RH');
+      this.empleadoForm.get('rol')?.setValue('recursosHumanos');
+    } else {
+      console.log('Asignando rol de empleado porque el departamento NO es RH');
+      this.empleadoForm.get('rol')?.setValue('empleado');
+    }
   }
 
   // Métodos para manipular FormArrays
@@ -165,7 +178,6 @@ export class EditarEmpleadoComponent implements OnInit {
         if (response.success && response.data) {
           const empleado = response.data;
           this.empleadoOriginal = { ...empleado };
-          console.log('Datos del empleado cargados:', empleado);
           
           try {
             // Extraer los componentes de la dirección
@@ -212,7 +224,6 @@ export class EditarEmpleadoComponent implements OnInit {
               apellidoPaterno: empleado.apellidoPaterno,
               apellidoMaterno: empleado.apellidoMaterno,
               fechaNacimiento: fechaNacimiento,
-              // Si no existe la propiedad sexo en empleado, usar valor por defecto
               sexo: empleado.sexo || 'Masculino', 
               
               direccion: direccion,
@@ -224,11 +235,9 @@ export class EditarEmpleadoComponent implements OnInit {
               
               email: empleado.email,
               fechaIngreso: fechaIngreso,
-              puesto: empleado.puesto,
-              departamento: empleado.departamento,
               
-              // Si no existe la propiedad rol en empleado, usar valor por defecto
-              rol: 'empleado' 
+              // No asignar departamento y puesto aquí
+              rol: empleado.rol || 'empleado'
             });
             
             // Cargar teléfonos si existen
@@ -274,13 +283,43 @@ export class EditarEmpleadoComponent implements OnInit {
                 ? empleado.foto 
                 : `${baseUrl}${empleado.foto}`;
             }
+            
+            // Una vez cargados los datos, buscar el departamento por nombre
+            if (empleado.departamento) {
+              // Cuando los departamentos se hayan cargado
+              const buscarDepartamento = setInterval(() => {
+                if (this.departamentos.length > 0) {
+                  clearInterval(buscarDepartamento);
+                  
+                  // Buscar por nombreDepartamento
+                  const departamentoEncontrado = this.departamentos.find(
+                    d => d.nombreDepartamento === empleado.departamento
+                  );
+                  
+                  if (departamentoEncontrado) {
+                    // Asignar ID del departamento al formulario
+                    this.empleadoForm.get('departamento')?.setValue(departamentoEncontrado._id);
+                    
+                    // Cargar los puestos de este departamento
+                    this.cargarPuestosPorDepartamento(departamentoEncontrado._id);
+                    
+                    // Asignar el puesto después de que se carguen
+                    setTimeout(() => {
+                      this.empleadoForm.get('puesto')?.setValue(empleado.puesto);
+                    }, 800);
+                  }
+                }
+              }, 300);
+            }
           } catch (error) {
             console.error('Error al procesar los datos del empleado:', error);
           }
+          
+          this.cargandoDatos = false;
         } else {
           this.error = 'No se pudo cargar la información del empleado';
+          this.cargandoDatos = false;
         }
-        this.cargandoDatos = false;
       },
       error: (err) => {
         this.error = 'Error al cargar la información del empleado';
@@ -332,15 +371,16 @@ export class EditarEmpleadoComponent implements OnInit {
     const empleadoData = this.prepararDatosEmpleado();
     
     // Agregar todos los campos del formulario
-    Object.keys(empleadoData).forEach(key => {
-      if (typeof empleadoData[key] === 'object') {
-        // Para arreglos y objetos, convertir a JSON string
-        formData.append(key, JSON.stringify(empleadoData[key]));
-      } else {
-        formData.append(key, empleadoData[key]);
+    Object.entries(empleadoData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        if (typeof value === 'object' && value !== null) {
+          // Para arreglos y objetos, convertir a JSON string
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== null) {
+          formData.append(key, String(value));
+        }
       }
     });
-    
     // Agregar foto si se seleccionó
     if (this.selectedFile) {
       formData.append('foto', this.selectedFile);
@@ -385,7 +425,7 @@ export class EditarEmpleadoComponent implements OnInit {
     });
   }
 
-  prepararDatosEmpleado() {
+  prepararDatosEmpleado(): Record<string, any> {
     const formValues = this.empleadoForm.value;
     
     // Formatear teléfonos como objetos
@@ -397,11 +437,26 @@ export class EditarEmpleadoComponent implements OnInit {
     // Construir dirección completa
     const direccionCompleta = `${formValues.direccion}, ${formValues.numeroExterior || 'S/N'}${formValues.numeroInterior ? ' Int. ' + formValues.numeroInterior : ''}, ${formValues.colonia}, ${formValues.codigoPostal}, ${formValues.ciudad}`;
     
+    // Encontrar el nombre del departamento seleccionado
+    const departamentoSeleccionado = this.departamentos.find(d => d._id === formValues.departamento);
+    const nombreDepartamento = departamentoSeleccionado ? departamentoSeleccionado.nombreDepartamento : '';
+    
     // Crear objeto con los datos formateados
     return {
-      ...formValues,
+      nombre: formValues.nombre,
+      apellidoPaterno: formValues.apellidoPaterno,
+      apellidoMaterno: formValues.apellidoMaterno,
+      fechaNacimiento: formValues.fechaNacimiento,
+      sexo: formValues.sexo,
       direccion: direccionCompleta,
-      telefonos: telefonos
+      ciudad: formValues.ciudad,
+      email: formValues.email,
+      telefonos: telefonos,
+      referenciasFamiliares: formValues.referenciasFamiliares,
+      fechaIngreso: formValues.fechaIngreso,
+      departamento: nombreDepartamento,
+      puesto: formValues.puesto,
+      rol: formValues.rol
     };
   }
 

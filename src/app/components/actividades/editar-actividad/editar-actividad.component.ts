@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ActividadService } from '../../../services/actividades.service'; 
 import { EmpleadoService } from '../../../services/empleado.service';
 
 @Component({
@@ -9,94 +9,88 @@ import { EmpleadoService } from '../../../services/empleado.service';
   styleUrls: ['./editar-actividad.component.css']
 })
 export class EditarActividadComponent implements OnInit {
-  actividadForm!: FormGroup;
   empleadoId: string = '';
-  actividadId: string = '';
-  isEditing: boolean = false;
-  loading: boolean = false;
+  actividades: any[] = [];
+  actividadSeleccionada: any = null;
+  cargando: boolean = true;
   error: string = '';
 
   constructor(
-    private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
+    private actividadService: ActividadService,
     private empleadoService: EmpleadoService
   ) { }
 
   ngOnInit(): void {
     this.empleadoId = this.route.snapshot.params['id'];
-    this.actividadId = this.route.snapshot.params['actividadId'];
-    this.isEditing = !!this.actividadId;
-    
-    this.createForm();
-    
-    if (this.isEditing && this.actividadId) {
-      this.loadActividadData();
-    }
+    this.cargarCatalogoActividades();
   }
 
-  createForm(): void {
-    this.actividadForm = this.fb.group({
-      nombre: ['', [Validators.required]],
-      fecha: ['', [Validators.required]],
-      participo: [true],
-      observaciones: ['']
-    });
-  }
-
-  loadActividadData(): void {
-    this.loading = true;
-    this.empleadoService.getActividad(this.empleadoId, this.actividadId).subscribe({
+  cargarCatalogoActividades(): void {
+    this.cargando = true;
+    this.actividadService.getTodasActividades().subscribe({
       next: (response) => {
         if (response.success) {
-          const actividad = response.data;
-          this.actividadForm.patchValue({
-            nombre: actividad.nombre,
-            fecha: this.formatDate(actividad.fecha),
-            participo: actividad.participo,
-            observaciones: actividad.observaciones || ''
+          // Cargar actividades ya asignadas para filtrarlas
+          this.empleadoService.getActividades(this.empleadoId).subscribe({
+            next: (empResponse) => {
+              if (empResponse.success) {
+                const actividadesAsignadas = empResponse.data || [];
+                // Filtrar actividades no asignadas
+                this.actividades = response.data.filter((act: any) =>
+                  !actividadesAsignadas.some((asig: any) =>
+                    asig.nombre === act.nombre
+                  )
+                );
+              }
+              this.cargando = false;
+            },
+            error: (err) => {
+              this.error = 'Error al cargar actividades del empleado';
+              this.cargando = false;
+              console.error(err);
+            }
           });
+        } else {
+          this.error = 'Error al cargar el catálogo de actividades';
+          this.cargando = false;
         }
-        this.loading = false;
       },
       error: (err) => {
-        this.error = 'Error al cargar información de la actividad';
-        this.loading = false;
+        this.error = 'Error al cargar el catálogo de actividades';
+        this.cargando = false;
         console.error(err);
       }
     });
   }
 
-  formatDate(dateString: string): string {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toISOString().substring(0, 10);
-  }
-
-  onSubmit(): void {
-    if (this.actividadForm.invalid) {
+  asignarActividad(): void {
+    if (!this.actividadSeleccionada) {
+      this.error = 'Debe seleccionar una actividad';
       return;
     }
 
-    this.loading = true;
-    const actividadData = this.actividadForm.value;
+    const datos = {
+      actividadId: this.actividadSeleccionada._id
+    };
 
-    const request = this.isEditing
-      ? this.empleadoService.actualizarActividad(this.empleadoId, this.actividadId, actividadData)
-      : this.empleadoService.registrarActividad(this.empleadoId, actividadData);
-
-    request.subscribe({
+    this.actividadService.asignarActividad(this.empleadoId, datos).subscribe({
       next: (response) => {
         if (response.success) {
-          this.router.navigate(['/empleados', this.empleadoId, 'actividades']);
+          this.router.navigate(['/empleados/ver', this.empleadoId]);
+        } else {
+          this.error = 'Error al asignar la actividad';
         }
-        this.loading = false;
       },
       error: (err) => {
-        this.error = `Error al ${this.isEditing ? 'actualizar' : 'crear'} la actividad`;
-        this.loading = false;
+        this.error = 'Error al asignar la actividad';
         console.error(err);
       }
     });
+  }
+
+  cancelar(): void {
+    this.router.navigate(['/empleados/ver', this.empleadoId]);
   }
 }

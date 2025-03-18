@@ -42,9 +42,6 @@
               <td>{{ curso.fechaFin | date }}</td>
               <td>{{ curso.tipoDocumento }}</td>
               <td *ngIf="canEdit">
-                <button class="btn btn-sm btn-primary me-1" [routerLink]="['/empleados', empleadoId, 'cursos', 'editar', curso._id]">
-                  Editar
-                </button>
                 <button class="btn btn-sm btn-danger" (click)="eliminarCurso(curso._id)">
                   Eliminar
                 </button>

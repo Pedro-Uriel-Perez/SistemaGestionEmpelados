@@ -1,9 +1,40 @@
 <!-- Encabezado de la página -->
 <div class="page-header">
-    <h2 class="page-title">Lista de Empleados</h2>
+    <h2 class="page-title">Empleados UTNG</h2>
     <button class="btn-new" routerLink="/empleados/crear">
       <i class="fas fa-plus"></i> Nuevo Empleado
     </button>
+  </div>
+  
+  <!-- Sección de filtros -->
+  <div class="filtros-container">
+    <h3 class="filtros-title">Buscar Empleados</h3>
+    <form [formGroup]="filtrosForm" class="filtros-form">
+      <div class="filtros-grid">
+        <div class="filtro-item">
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" formControlName="nombre" placeholder="Buscar por nombre...">
+        </div>
+        
+        <div class="filtro-item">
+          <label for="departamento">Departamento:</label>
+          <input type="text" id="departamento" formControlName="departamento" placeholder="Departamento...">
+        </div>
+        
+        <div class="filtro-item">
+          <label for="puesto">Puesto:</label>
+          <input type="text" id="puesto" formControlName="puesto" placeholder="Puesto...">
+        </div>
+        
+        <div class="filtro-item">
+          <label for="estado">Estado:</label>
+          <select id="estado" formControlName="estado">
+            <option value="">Todos los estados</option>
+            <option *ngFor="let estado of estados" [value]="estado">{{ estado }}</option>
+          </select>
+        </div>
+      </div>
+    </form>
   </div>
   
   <!-- Estado de carga -->
@@ -61,15 +92,3 @@
     </tbody>
   </table>
   
-  <!-- Estado vacío -->
-  <div *ngIf="!cargando && empleados.length === 0" class="empty-state">
-    <div class="empty-state-icon">
-      <i class="fas fa-users-slash"></i>
-    </div>
-    <div class="empty-state-text">
-      No hay empleados registrados
-    </div>
-    <button class="btn-new" routerLink="/empleados/crear">
-      <i class="fas fa-plus"></i> Agregar Empleado
-    </button>
-  </div>

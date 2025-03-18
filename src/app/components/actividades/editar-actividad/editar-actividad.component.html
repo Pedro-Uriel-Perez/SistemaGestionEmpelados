@@ -1,51 +1,50 @@
 <div class="container mt-4">
-    <h2>{{ isEditing ? 'Editar' : 'Registrar' }} Actividad</h2>
-  
+    <h2>Asignar Actividad</h2>
+    
+    <!-- Mensaje de error -->
     <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-  
-    <div *ngIf="loading" class="text-center my-5">
+    
+    <!-- Spinner mientras carga -->
+    <div *ngIf="cargando" class="text-center my-3">
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
     </div>
-  
-    <form [formGroup]="actividadForm" (ngSubmit)="onSubmit()">
-      <div class="card">
+    
+    <!-- Formulario para asignar actividad -->
+    <div *ngIf="!cargando">
+      <div *ngIf="actividades.length === 0" class="alert alert-info">
+        No hay actividades disponibles para asignar a este empleado.
+      </div>
+      
+      <div *ngIf="actividades.length > 0" class="card">
         <div class="card-body">
           <div class="mb-3">
-            <label for="nombre" class="form-label">Nombre de la Actividad *</label>
-            <input type="text" class="form-control" id="nombre" formControlName="nombre">
-            <div *ngIf="actividadForm.get('nombre')?.invalid && actividadForm.get('nombre')?.touched" class="text-danger">
-              El nombre de la actividad es requerido
+            <label for="actividad" class="form-label">Seleccione una actividad:</label>
+            <select id="actividad" class="form-select" [(ngModel)]="actividadSeleccionada">
+              <option [ngValue]="null">-- Seleccione --</option>
+              <option *ngFor="let act of actividades" [ngValue]="act">
+                {{ act.nombre }} ({{ act.fecha | date:'dd/MM/yyyy' }})
+              </option>
+            </select>
+          </div>
+          
+          <div *ngIf="actividadSeleccionada" class="card mb-3">
+            <div class="card-body">
+              <h5>Detalles de la actividad</h5>
+              <p><strong>Nombre:</strong> {{ actividadSeleccionada.nombre }}</p>
+              <p><strong>Fecha:</strong> {{ actividadSeleccionada.fecha | date:'dd/MM/yyyy' }}</p>
+              <p *ngIf="actividadSeleccionada.descripcion"><strong>Descripción:</strong> {{ actividadSeleccionada.descripcion }}</p>
             </div>
           </div>
-  
-          <div class="mb-3">
-            <label for="fecha" class="form-label">Fecha *</label>
-            <input type="date" class="form-control" id="fecha" formControlName="fecha">
-            <div *ngIf="actividadForm.get('fecha')?.invalid && actividadForm.get('fecha')?.touched" class="text-danger">
-              La fecha es requerida
-            </div>
-          </div>
-  
-          <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="participo" formControlName="participo">
-            <label class="form-check-label" for="participo">¿Participó?</label>
-          </div>
-  
-          <div class="mb-3">
-            <label for="observaciones" class="form-label">Observaciones</label>
-            <textarea class="form-control" id="observaciones" rows="3" formControlName="observaciones"></textarea>
+          
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" [disabled]="!actividadSeleccionada" (click)="asignarActividad()">
+              Asignar Actividad
+            </button>
+            <button class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
           </div>
         </div>
       </div>
-  
-      <div class="d-flex justify-content-between mt-3">
-        <button type="button" class="btn btn-secondary" [routerLink]="['/empleados', empleadoId, 'actividades']">Cancelar</button>
-        <button type="submit" class="btn btn-primary" [disabled]="actividadForm.invalid || loading">
-          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
-          {{ isEditing ? 'Guardar Cambios' : 'Registrar Actividad' }}
-        </button>
-      </div>
-    </form>
+    </div>
   </div>

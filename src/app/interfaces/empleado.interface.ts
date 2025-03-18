@@ -6,18 +6,18 @@ export interface Empleado {
     apellidoPaterno: string;
     apellidoMaterno: string;
     fechaNacimiento: string;
-    sexo: string;  // Añadido para manejar el campo de sexo
+    sexo: string;  
     foto?: string;
     direccion: string;
-    telefono: string;  // Campo original (singular)
-    telefonos: Telefono[];  // Campo plural para múltiples teléfonos
+    telefono: string; 
+    telefonos: Telefono[];  // mltiples teléfonos
     email: string;
     fechaIngreso: string;
     ciudad: string;
     puesto: string;
     departamento: string;
     estado: string;
-    rol?: string;  // Añadido para manejar permisos de usuario
+    rol?: string;  
     bajas?: Baja[];
     cursos?: Curso[];
     actividades?: Actividad[];

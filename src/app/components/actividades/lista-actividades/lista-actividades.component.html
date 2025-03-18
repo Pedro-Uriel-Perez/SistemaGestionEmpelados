@@ -1,61 +1,76 @@
+<!-- lista-actividades.component.html -->
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Actividades de {{ empleado?.nombre }} {{ empleado?.apellidoPaterno }}</h2>
-      <div>
-        <button *ngIf="canEdit" class="btn btn-primary me-2" [routerLink]="['/empleados', empleadoId, 'actividades', 'nuevo']">
-          Agregar Actividad
-        </button>
-        <button class="btn btn-secondary" [routerLink]="['/empleados', 'ver', empleadoId]">
-          Volver
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h2>Catálogo de Actividades</h2>
+        <button *ngIf="esRecursosHumanos" class="btn btn-primary" (click)="toggleFormulario()">
+          Nueva Actividad
         </button>
       </div>
-    </div>
-  
-    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-  
-    <div *ngIf="loading" class="text-center my-5">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Cargando...</span>
-      </div>
-    </div>
-  
-    <div *ngIf="!loading">
-      <div *ngIf="actividades.length === 0" class="alert alert-info">
-        No hay actividades registradas para este empleado.
-      </div>
-  
-      <div class="table-responsive" *ngIf="actividades.length > 0">
-        <table class="table table-striped">
+      
+      <div class="card-body">
+        <!-- Mensaje de error -->
+        <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+        
+        <!-- Formulario para crear actividad -->
+        <div *ngIf="mostrarFormulario" class="mb-4">
+          <h4>Crear Nueva Actividad</h4>
+          <form [formGroup]="actividadForm" (ngSubmit)="guardarActividad()">
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="nombre" formControlName="nombre" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="fecha" class="form-label">Fecha</label>
+              <input type="date" class="form-control" id="fecha" formControlName="fecha" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="descripcion" class="form-label">Descripción</label>
+              <textarea class="form-control" id="descripcion" formControlName="descripcion" rows="3"></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <button type="submit" class="btn btn-success me-2" [disabled]="actividadForm.invalid">
+                Guardar
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="toggleFormulario()">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Lista de actividades -->
+        <table class="table table-striped" *ngIf="!loading && actividades.length > 0">
           <thead>
             <tr>
-              <th>Nombre de la Actividad</th>
+              <th>Nombre</th>
               <th>Fecha</th>
-              <th>Participación</th>
-              <th>Observaciones</th>
-              <th *ngIf="canEdit">Acciones</th>
+              <th>Descripción</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let actividad of actividades">
               <td>{{ actividad.nombre }}</td>
-              <td>{{ actividad.fecha | date }}</td>
-              <td>
-                <span class="badge" [ngClass]="actividad.participo ? 'bg-success' : 'bg-danger'">
-                  {{ actividad.participo ? 'Sí' : 'No' }}
-                </span>
-              </td>
-              <td>{{ actividad.observaciones || '-' }}</td>
-              <td *ngIf="canEdit">
-                <button class="btn btn-sm btn-primary me-1" [routerLink]="['/empleados', empleadoId, 'actividades', 'editar', actividad._id]">
-                  Editar
-                </button>
-                <button class="btn btn-sm btn-danger" (click)="eliminarActividad(actividad._id)">
-                  Eliminar
-                </button>
-              </td>
+              <td>{{ actividad.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>{{ actividad.descripcion }}</td>
             </tr>
           </tbody>
         </table>
+        
+        <!-- Mensaje cuando no hay actividades -->
+        <div *ngIf="!loading && actividades.length === 0" class="alert alert-info">
+          No hay actividades registradas en el catálogo.
+        </div>
+        
+        <!-- Indicador de carga -->
+        <div *ngIf="loading" class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

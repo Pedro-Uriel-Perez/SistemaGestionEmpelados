@@ -39,8 +39,8 @@ const obtenerCursoPorId = async (empleadoId, cursoId) => {
   return curso;
 };
 
-// Actualizar un curso
-const actualizarCurso = async (empleadoId, cursoId, cursoData) => {
+// Eliminar un curso
+const eliminarCurso = async (empleadoId, cursoId) => {
   const empleado = await Empleado.findById(empleadoId);
   
   if (!empleado) {
@@ -52,30 +52,7 @@ const actualizarCurso = async (empleadoId, cursoId, cursoData) => {
     throw new Error('Curso no encontrado');
   }
   
-  // Actualizar campos
-  Object.keys(cursoData).forEach(key => {
-    curso[key] = cursoData[key];
-  });
-  
-  await empleado.save();
-  return curso;
-};
-
-// Eliminar un curso
-const eliminarCurso = async (empleadoId, cursoId) => {
-  const empleado = await Empleado.findById(empleadoId);
-  
-  if (!empleado) {
-    throw new Error('Empleado no encontrado');
-  }
-  
-  const cursoIndex = empleado.cursos.findIndex(curso => curso._id.toString() === cursoId);
-  
-  if (cursoIndex === -1) {
-    throw new Error('Curso no encontrado');
-  }
-  
-  empleado.cursos.splice(cursoIndex, 1);
+  curso.remove();
   await empleado.save();
   return true;
 };
@@ -84,6 +61,5 @@ module.exports = {
   agregarCurso,
   obtenerCursos,
   obtenerCursoPorId,
-  actualizarCurso,
   eliminarCurso
 };
